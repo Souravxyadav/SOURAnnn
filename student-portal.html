@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal · ScholarLedger</title>
+<meta name="description" content="Personal student scholarship portal to track applications, DBT bank disbursals, eligible schemes, verified academic profile, and coordinator helpdesk.">
+<meta property="og:title" content="Student Portal · ScholarLedger">
+<meta property="og:description" content="Personal student scholarship portal to track applications, DBT bank disbursals, eligible schemes, verified academic profile, and coordinator helpdesk.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="js/auth-guard.js"></script>
+</head>
+<body class="bg-paper min-h-screen text-ink-900 font-body pb-24 md:pb-12">
+
+  <!-- ================================================================ -->
+  <!-- STUDENT PORTAL TOPBAR (NO ADMIN SWITCH, NO MENU DRAWER) -->
+  <!-- ================================================================ -->
+  <header class="student-portal-header bg-ink-950 text-white border-b border-ink-800 sticky top-0 z-40 w-full">
+    <div class="max-w-6xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3 min-w-0">
+      
+      <!-- Brand & Student Badge -->
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-ink-950 font-bold text-xs sm:text-sm shadow-xs shrink-0">
+          🎓
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-display font-bold text-sm sm:text-base text-white leading-none whitespace-nowrap">Scholar<span class="text-gold-400">Ledger</span></h1>
+            <span class="hidden xs:inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30 whitespace-nowrap">
+              Student Portal
+            </span>
+          </div>
+          <p id="portal-student-academic-sub" class="text-[10px] text-slate-300 mt-0.5 font-mono truncate">Academic Session 2025-26</p>
+        </div>
+      </div>
+
+      <!-- Desktop Tab Nav -->
+      <nav class="hidden md:flex items-center gap-1 bg-ink-900/90 p-1 rounded-2xl border border-ink-800 text-xs">
+        <button id="nav-btn-home" onclick="switchPortalTab('home')" class="portal-nav-btn px-3 py-1.5 rounded-xl bg-gold-500 text-ink-950 font-bold shadow-xs transition flex items-center gap-1.5">
+          <span>📊</span>
+          <span>Overview</span>
+        </button>
+        <button id="nav-btn-applications" onclick="switchPortalTab('applications')" class="portal-nav-btn px-3 py-1.5 rounded-xl text-ink-300 font-medium hover:text-white transition flex items-center gap-1.5">
+          <span>📋</span>
+          <span>My Applications</span>
+          <span id="nav-badge-apps" class="px-1.5 py-0.2 bg-ink-800 text-ink-300 text-[10px] rounded-full font-mono">0</span>
+        </button>
+        <button id="nav-btn-schemes" onclick="switchPortalTab('schemes')" class="portal-nav-btn px-3 py-1.5 rounded-xl text-ink-300 font-medium hover:text-white transition flex items-center gap-1.5">
+          <span>🎯</span>
+          <span>Available Schemes</span>
+        </button>
+        <button id="nav-btn-settings" onclick="switchPortalTab('settings')" class="portal-nav-btn px-3 py-1.5 rounded-xl text-ink-300 font-medium hover:text-white transition flex items-center gap-1.5">
+          <span>👤</span>
+          <span>My Profile</span>
+        </button>
+        <button id="nav-btn-contact" onclick="switchPortalTab('contact')" class="portal-nav-btn px-3 py-1.5 rounded-xl text-ink-300 font-medium hover:text-white transition flex items-center gap-1.5">
+          <span>💬</span>
+          <span>Help & Support</span>
+          <span id="nav-badge-replies" class="hidden px-1.5 py-0.2 bg-emerald-500 text-ink-950 text-[10px] rounded-full font-bold">New</span>
+        </button>
+      </nav>
+
+      <!-- Student Account & Sign Out -->
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div class="flex items-center gap-1.5 sm:gap-2 bg-ink-900/60 border border-ink-800/80 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl">
+          <div id="header-avatar-initials" class="w-6 h-6 rounded-lg bg-gold-500 text-ink-950 font-bold text-xs flex items-center justify-center shrink-0">
+            ST
+          </div>
+          <div class="text-left hidden sm:block max-w-[130px]">
+            <span id="portal-student-name" class="block text-xs font-bold text-white truncate">Student</span>
+            <span id="portal-student-code" class="block text-[10px] text-gold-400 font-mono leading-none">STU</span>
+          </div>
+        </div>
+
+        <button onclick="handleStudentLogout()" class="px-2.5 sm:px-3 py-1.5 bg-ink-900 hover:bg-red-500/20 text-ink-300 hover:text-red-300 border border-ink-800 hover:border-red-500/40 text-xs font-semibold rounded-xl transition flex items-center gap-1.5 min-h-[36px] whitespace-nowrap" title="Sign out of student account">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span class="hidden sm:inline">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Portal Container -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-12 space-y-6">
+
+    <!-- ================================================================ -->
+    <!-- TAB 1: OVERVIEW / DASHBOARD -->
+    <!-- ================================================================ -->
+    <div id="tab-content-home" class="portal-tab-content space-y-6">
+
+      <!-- Student Welcome Hero Banner -->
+      <div class="student-portal-hero bg-gradient-to-br from-ink-950 via-ink-900 to-ink-950 text-white rounded-3xl p-6 sm:p-7 shadow-xl relative overflow-hidden border border-ink-800">
+        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div class="flex items-center gap-4">
+            <div id="home-avatar-initials" class="w-14 sm:w-16 h-14 sm:h-16 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 text-ink-950 font-display font-extrabold text-xl sm:text-2xl flex items-center justify-center shadow-lg shrink-0">
+              ST
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 id="home-student-greeting" class="font-display font-bold text-lg sm:text-xl text-white">Welcome, Student</h2>
+                <span id="home-student-status-badge" class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                  Verified Active
+                </span>
+              </div>
+              <p id="home-student-subtitle" class="text-xs text-gold-300 mt-1 font-mono font-medium">ID: STU · Session 2025-2026</p>
+              <p id="home-student-college" class="text-xs text-slate-200 mt-0.5 font-sans font-medium">—</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button onclick="switchPortalTab('applications')" class="px-4 py-2 bg-gold-500 hover:bg-gold-400 text-ink-950 font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
+              <span>Track Applications</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+            <button onclick="switchPortalTab('contact')" class="px-3.5 py-2 bg-ink-800 hover:bg-ink-700 text-white font-semibold text-xs rounded-xl border border-ink-700 transition flex items-center gap-1.5">
+              <span>💬</span>
+              <span>Ask for Help</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Disbursement KPIs -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        <div class="bg-white rounded-2xl border border-ink-100 p-4 sm:p-5 shadow-card">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-ink-400 block">Enrolled Schemes</span>
+          <span id="stat-student-apps" class="font-display font-bold text-xl sm:text-2xl text-ink-900 mt-1 block">0</span>
+          <span class="text-[11px] text-ink-500 mt-0.5 block">Applied scholarship schemes</span>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-ink-100 p-4 sm:p-5 shadow-card">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-ink-400 block">Total Sanctioned</span>
+          <span id="stat-student-expected" class="font-display font-bold text-xl sm:text-2xl text-ink-900 mt-1 block">₹0</span>
+          <span class="text-[11px] text-ink-500 mt-0.5 block">Total approved grant award</span>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-emerald-200/70 p-4 sm:p-5 shadow-card bg-gradient-to-br from-white to-emerald-50/40">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Disbursed to Bank</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">DBT</span>
+          </div>
+          <span id="stat-student-received" class="font-display font-bold text-xl sm:text-2xl text-emerald-700 mt-1 block">₹0</span>
+          <span class="text-[11px] text-emerald-600 mt-0.5 block">Credited to bank account</span>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-amber-200/70 p-4 sm:p-5 shadow-card bg-gradient-to-br from-white to-amber-50/40">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">Under Clearance</span>
+          <span id="stat-student-pending" class="font-display font-bold text-xl sm:text-2xl text-amber-700 mt-1 block">₹0</span>
+          <span class="text-[11px] text-amber-600 mt-0.5 block">Pending state/treasury release</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Navigation Bar -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button onclick="switchPortalTab('schemes')" class="bg-white hover:bg-ink-50/60 border border-ink-100 rounded-2xl p-4 text-left shadow-card transition flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gold-50 text-gold-600 flex items-center justify-center text-lg shrink-0">🎯</div>
+          <div>
+            <h4 class="font-bold text-xs text-ink-900">Explore Available Schemes</h4>
+            <p class="text-[11px] text-ink-400 mt-0.5">Check eligibility for new programs</p>
+          </div>
+        </button>
+
+        <button onclick="switchPortalTab('settings')" class="bg-white hover:bg-ink-50/60 border border-ink-100 rounded-2xl p-4 text-left shadow-card transition flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">👤</div>
+          <div>
+            <h4 class="font-bold text-xs text-ink-900">Verified Academic Record</h4>
+            <p class="text-[11px] text-ink-400 mt-0.5">View verified student details</p>
+          </div>
+        </button>
+
+        <button onclick="switchPortalTab('contact')" class="bg-white hover:bg-ink-50/60 border border-ink-100 rounded-2xl p-4 text-left shadow-card transition flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">💬</div>
+          <div>
+            <h4 class="font-bold text-xs text-ink-900">Helpdesk & Advisor Replies</h4>
+            <p class="text-[11px] text-ink-400 mt-0.5">Ask questions or check replies</p>
+          </div>
+        </button>
+      </div>
+
+      <!-- Academic Profile Details Strip -->
+      <div id="student-profile-card"></div>
+
+      <!-- Active Applications Snapshot -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h3 class="font-display font-bold text-base text-ink-900">My Scholarship Applications</h3>
+            <span id="home-apps-count-badge" class="px-2 py-0.5 bg-ink-100 text-ink-600 text-[10px] font-bold rounded-full">0</span>
+          </div>
+          <button onclick="switchPortalTab('applications')" class="text-xs font-semibold text-gold-600 hover:text-gold-700 hover:underline">
+            View All Applications →
+          </button>
+        </div>
+
+        <div id="home-applications-preview" class="space-y-3"></div>
+      </div>
+
+      <!-- Recent Inquiries & Responses Snapshot -->
+      <div id="home-support-preview-section" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h3 class="font-display font-bold text-base text-ink-900">Coordinator Help Requests</h3>
+            <span id="home-inquiries-count-badge" class="px-2 py-0.5 bg-ink-100 text-ink-600 text-[10px] font-bold rounded-full">0</span>
+          </div>
+          <button onclick="switchPortalTab('contact')" class="text-xs font-semibold text-gold-600 hover:text-gold-700 hover:underline">
+            Open Helpdesk & Inquiries →
+          </button>
+        </div>
+        <div id="home-support-preview" class="space-y-3"></div>
+      </div>
+
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- TAB 2: APPLICATIONS (DETAILED TIMELINE TRACKER) -->
+    <!-- ================================================================ -->
+    <div id="tab-content-applications" class="portal-tab-content space-y-4 hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-3xl border border-ink-100 shadow-card">
+        <div>
+          <h2 class="font-display font-bold text-lg text-ink-900">My Scholarship Applications</h2>
+          <p class="text-xs text-ink-500 mt-0.5">Live tracking of state & central portal submission milestones and bank credits</p>
+        </div>
+        <span class="px-3.5 py-1.5 bg-ink-100 text-ink-800 text-xs font-bold rounded-xl self-start sm:self-auto">
+          <span id="tab-count-apps">0</span> Applications Tracked
+        </span>
+      </div>
+
+      <div id="applications-list" class="space-y-4"></div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- TAB 3: AVAILABLE SCHEMES CATALOG -->
+    <!-- ================================================================ -->
+    <div id="tab-content-schemes" class="portal-tab-content space-y-4 hidden">
+      <div class="bg-white p-5 rounded-3xl border border-ink-100 shadow-card space-y-3">
+        <div>
+          <h2 class="font-display font-bold text-lg text-ink-900">Eligible & Available Scholarships</h2>
+          <p class="text-xs text-ink-500 mt-0.5">Browse institutional, state, and national scholarship schemes. Request coordinator guidance to apply.</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 pt-2">
+          <div class="relative flex-1">
+            <input id="schemes-search" oninput="handleSchemesSearch()" type="text" placeholder="Search scholarship title, category, provider, eligibility..." class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-ink-200 outline-none focus:border-gold-500 bg-white">
+            <svg class="w-3.5 h-3.5 text-ink-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+
+          <!-- Scheme Category Filter -->
+          <select id="schemes-category-filter" onchange="handleSchemesSearch()" class="text-xs rounded-xl border border-ink-200 bg-ink-50/50 px-3 py-2 text-ink-800 outline-none focus:border-gold-500 focus:bg-white transition">
+            <option value="ALL">All Categories</option>
+            <option value="Central">Central Schemes</option>
+            <option value="State">State Schemes</option>
+            <option value="Post Matric">Post-Matric</option>
+            <option value="Pre Matric">Pre-Matric</option>
+            <option value="Merit">Merit / Means</option>
+            <option value="Minority">Minority</option>
+            <option value="Girls">Girls & Women</option>
+          </select>
+
+          <!-- Eligibility Evaluation Filter -->
+          <select id="schemes-eligibility-filter" onchange="handleSchemesSearch()" class="text-xs rounded-xl border border-ink-200 bg-ink-50/50 px-3 py-2 text-ink-800 outline-none focus:border-gold-500 focus:bg-white transition">
+            <option value="ALL">All Eligibility</option>
+            <option value="ELIGIBLE">🟢 Eligible Only</option>
+            <option value="NEEDS_REVIEW">🟡 Needs Review Only</option>
+          </select>
+
+          <button onclick="resetPortalSchemesFilters()" class="text-xs text-gold-600 hover:text-gold-700 font-semibold px-2 py-1 transition cursor-pointer shrink-0">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div id="schemes-catalog-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- TAB 4: MY PROFILE (READ-ONLY VERIFIED) -->
+    <!-- ================================================================ -->
+    <div id="tab-content-settings" class="portal-tab-content space-y-6 hidden">
+      <div class="bg-white rounded-3xl border border-ink-100 p-6 sm:p-7 shadow-card space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ink-100 pb-4">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gold-600 font-mono">Institutional Registry</span>
+            <h2 class="font-display font-bold text-lg sm:text-xl text-ink-900 mt-0.5">Verified Student Profile</h2>
+            <p class="text-xs text-ink-500 mt-0.5">Verified candidate academic and personal credentials registered with the scholarship desk.</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Verified Record</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Section 1: Academic Credentials -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-xs uppercase tracking-wider text-ink-400">1. Academic Registration</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5 text-xs">
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100 flex flex-col justify-between">
+              <div>
+                <span class="text-ink-400 block text-[10px] font-semibold uppercase">Student ID / Code</span>
+                <span id="settings-code" class="font-bold text-ink-900 font-mono mt-0.5 block">—</span>
+              </div>
+              <div id="settings-code-copy" class="mt-2 text-right"></div>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Enrolled Course</span>
+              <span id="settings-course" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">College / University</span>
+              <span id="settings-college" class="font-bold text-ink-900 mt-0.5 block truncate">—</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Admission Year & Semester</span>
+              <span id="settings-admission-sem" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+            <div class="bg-ink-50/70 p-3 rounded-2xl border border-ink-100 flex items-center justify-between">
+              <span class="text-ink-400 text-[11px] font-medium">Previous Qualifying Score (%):</span>
+              <span id="settings-percentage" class="font-bold text-ink-900">—</span>
+            </div>
+            <div class="bg-ink-50/70 p-3 rounded-2xl border border-ink-100 flex items-center justify-between">
+              <span class="text-ink-400 text-[11px] font-medium">Current Enrollment Status:</span>
+              <span id="settings-status" class="font-bold text-emerald-700">Active</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Personal & Identity Information -->
+        <div class="space-y-3 pt-2">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-ink-400">2. Personal & Identity Records</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5 text-xs">
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Full Legal Name</span>
+              <span id="settings-name" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Father's Name</span>
+              <span id="settings-father" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Mother's Name</span>
+              <span id="settings-mother" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Date of Birth & Gender</span>
+              <span id="settings-dob-gender" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5 text-xs">
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100 flex flex-col justify-between">
+              <div>
+                <span class="text-ink-400 block text-[10px] font-semibold uppercase">Aadhaar / ID Number</span>
+                <span id="settings-aadhaar" class="font-bold text-ink-900 font-mono mt-0.5 block">—</span>
+              </div>
+              <div id="settings-aadhaar-copy" class="mt-2 text-right"></div>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Social Category</span>
+              <span id="settings-category" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Religion & PwD Status</span>
+              <span id="settings-religion-pwd" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Annual Family Income</span>
+              <span id="settings-income" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Contact & Domicile Address -->
+        <div class="space-y-3 pt-2">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-ink-400">3. Contact & Domicile Address</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 text-xs">
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100 flex flex-col justify-between">
+              <div>
+                <span class="text-ink-400 block text-[10px] font-semibold uppercase">Registered Mobile</span>
+                <span id="settings-mobile" class="font-bold text-ink-900 font-mono mt-0.5 block">—</span>
+              </div>
+              <div id="settings-mobile-copy" class="mt-2 text-right"></div>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100 flex flex-col justify-between">
+              <div>
+                <span class="text-ink-400 block text-[10px] font-semibold uppercase">Email Address</span>
+                <span id="settings-email" class="font-bold text-ink-900 mt-0.5 block truncate">—</span>
+              </div>
+              <div id="settings-email-copy" class="mt-2 text-right"></div>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Domicile State & District</span>
+              <span id="settings-state-district" class="font-bold text-ink-900 mt-0.5 block">—</span>
+            </div>
+          </div>
+
+          <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Permanent Residential Address</span>
+              <p id="settings-address" class="font-semibold text-ink-900 mt-0.5 leading-relaxed">—</p>
+            </div>
+            <div id="settings-address-copy" class="shrink-0"></div>
+          </div>
+        </div>
+
+        <!-- Section 4: Bank & DBT Seeding -->
+        <div class="space-y-3 pt-2">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-ink-400">4. DBT Bank Account for Disbursement</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs">
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Designated Bank</span>
+              <span id="settings-bank-name" class="font-bold text-ink-900 mt-0.5 block">State Bank of India</span>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100 flex flex-col justify-between">
+              <div>
+                <span class="text-ink-400 block text-[10px] font-semibold uppercase">Account Number & IFSC</span>
+                <span id="settings-bank-acc" class="font-bold text-ink-900 font-mono mt-0.5 block">—</span>
+              </div>
+              <div id="settings-bank-copy" class="mt-2 text-right"></div>
+            </div>
+
+            <div class="bg-ink-50/70 p-3.5 rounded-2xl border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">DBT Seeding Status</span>
+              <span class="font-bold text-emerald-700 mt-0.5 flex items-center gap-1">
+                <span>✓</span> Active & Aadhaar Linked
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note & Actions -->
+        <div class="pt-4 border-t border-ink-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <p class="text-xs text-ink-500">
+            ℹ️ To update any incorrect record or address change, please submit an inquiry in the <button onclick="switchPortalTab('contact')" class="text-gold-600 underline font-semibold">Help & Support tab</button>.
+          </p>
+          <button onclick="handleStudentLogout()" class="px-5 py-2.5 border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold rounded-xl transition self-start sm:self-auto flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span>Sign Out of Account</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- TAB 5: HELP & SUPPORT DESK (WITH 2-WAY LIVE REPLIES) -->
+    <!-- ================================================================ -->
+    <div id="tab-content-contact" class="portal-tab-content space-y-6 hidden">
+      
+      <!-- Direct Contact Channels -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <a id="admin-whatsapp-btn" target="_blank" class="bg-white rounded-2xl border border-ink-100 p-4 sm:p-5 shadow-card hover:border-emerald-300 hover:shadow-md transition text-center space-y-1.5 block group">
+          <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mx-auto group-hover:scale-105 transition">💬</div>
+          <h4 class="font-bold text-xs text-ink-900">WhatsApp Coordinator</h4>
+          <p class="text-[11px] text-ink-400">Instant chat & urgent correction assistance</p>
+        </a>
+
+        <a id="admin-phone-btn" class="bg-white rounded-2xl border border-ink-100 p-4 sm:p-5 shadow-card hover:border-gold-300 hover:shadow-md transition text-center space-y-1.5 block group">
+          <div class="w-11 h-11 rounded-2xl bg-gold-50 text-gold-600 flex items-center justify-center text-xl mx-auto group-hover:scale-105 transition">📞</div>
+          <h4 class="font-bold text-xs text-ink-900">Center Helpline</h4>
+          <p class="text-[11px] text-ink-400">Direct voice support during office hours</p>
+        </a>
+
+        <a id="admin-email-btn" class="bg-white rounded-2xl border border-ink-100 p-4 sm:p-5 shadow-card hover:border-blue-300 hover:shadow-md transition text-center space-y-1.5 block group">
+          <div class="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mx-auto group-hover:scale-105 transition">✉️</div>
+          <h4 class="font-bold text-xs text-ink-900">Email Support Desk</h4>
+          <p class="text-[11px] text-ink-400">Document submissions & official requests</p>
+        </a>
+      </div>
+
+      <!-- Main Support Layout: Ask Form (Left) & Inquiries History + Replies (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left: Inquiry Form (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-3xl border border-ink-100 p-6 shadow-card space-y-4">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gold-600 font-mono">Coordinator Desk</span>
+            <h3 class="font-display font-bold text-base text-ink-900 mt-0.5">Ask Coordinator for Help</h3>
+            <p class="text-xs text-ink-500 mt-0.5">Submit your question regarding application status, document upload deficiency, or bank disbursals.</p>
+          </div>
+
+          <form id="student-contact-form" onsubmit="handleContactSubmit(event)" class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1">Inquiry Topic *</label>
+              <select id="contact-category" class="w-full rounded-xl border border-ink-200 px-3 py-2 text-xs outline-none focus:border-gold-500 bg-white font-medium">
+                <option value="Application Status & Delay">Application Status & Review Delay</option>
+                <option value="Document Correction & Deficiency">Document Correction / Deficiency Re-upload</option>
+                <option value="Payment & Bank Disbursal">Payment / Bank Disbursal (DBT) Inquiry</option>
+                <option value="New Scholarship Eligibility">New Scholarship Eligibility Guidance</option>
+                <option value="Profile / Name Correction">Profile / Name / Roll No Correction</option>
+                <option value="Other Assistance">Other Center Assistance</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1">Related Application (Optional)</label>
+              <select id="contact-scholarship" class="w-full rounded-xl border border-ink-200 px-3 py-2 text-xs outline-none focus:border-gold-500 bg-white font-medium">
+                <option value="">Select if applicable...</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1">Subject *</label>
+              <input required id="contact-subject" class="w-full rounded-xl border border-ink-200 px-3 py-2 text-xs outline-none focus:border-gold-500" placeholder="e.g., When will 2nd installment be released?">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1">Message / Question Details *</label>
+              <textarea required id="contact-message" rows="4" class="w-full rounded-xl border border-ink-200 px-3 py-2 text-xs outline-none focus:border-gold-500" placeholder="Please describe your question or issue in detail…"></textarea>
+            </div>
+
+            <button type="submit" id="contact-submit-btn" class="w-full py-2.5 bg-ink-900 hover:bg-gold-500 hover:text-ink-950 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+              <span>Submit Help Request</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Message History & Admin Responses (7 cols) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-white rounded-3xl border border-ink-100 p-6 shadow-card space-y-4">
+            <div class="flex items-center justify-between border-b border-ink-100 pb-3">
+              <div>
+                <h3 class="font-display font-bold text-base text-ink-900">My Inquiries & Advisor Replies</h3>
+                <p class="text-xs text-ink-500 mt-0.5">Track your submitted queries and read official coordinator replies</p>
+              </div>
+              <button onclick="reloadStudentInquiries()" class="px-2.5 py-1 bg-ink-100 hover:bg-ink-200 text-ink-700 text-xs font-semibold rounded-lg transition flex items-center gap-1" title="Refresh replies">
+                <span>🔄</span>
+                <span>Refresh</span>
+              </button>
+            </div>
+
+            <!-- Inquiries List -->
+            <div id="student-my-inquiries-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-1">
+              <p class="text-xs text-ink-400">Loading your inquiries…</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================================================================ -->
+  <!-- MOBILE BOTTOM TAB NAVIGATION (CLEAN 5 DIRECT TABS, NO MENU) -->
+  <!-- ================================================================ -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-ink-950/95 backdrop-blur-md border-t border-ink-800 py-1.5 px-2 z-40 flex items-center justify-around text-[10px] safe-bottom">
+    <button id="bottom-btn-home" onclick="switchPortalTab('home')" class="portal-bottom-btn flex flex-col items-center gap-0.5 text-gold-400 font-bold transition flex-1">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2 7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span>Overview</span>
+    </button>
+    <button id="bottom-btn-applications" onclick="switchPortalTab('applications')" class="portal-bottom-btn flex flex-col items-center gap-0.5 text-ink-400 transition flex-1">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <span>Apps</span>
+    </button>
+    <button id="bottom-btn-schemes" onclick="switchPortalTab('schemes')" class="portal-bottom-btn flex flex-col items-center gap-0.5 text-ink-400 transition flex-1">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      <span>Schemes</span>
+    </button>
+    <button id="bottom-btn-settings" onclick="switchPortalTab('settings')" class="portal-bottom-btn flex flex-col items-center gap-0.5 text-ink-400 transition flex-1">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      <span>Profile</span>
+    </button>
+    <button id="bottom-btn-contact" onclick="switchPortalTab('contact')" class="portal-bottom-btn flex flex-col items-center gap-0.5 text-ink-400 transition flex-1">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span>Help</span>
+    </button>
+  </nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/eligibility-engine.js"></script>
+<script src="js/student-portal.js"></script>
+</body>
+</html>

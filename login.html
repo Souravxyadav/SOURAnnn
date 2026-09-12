@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login · ScholarLedger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+</head>
+<body class="min-h-screen bg-paper flex items-center justify-center px-4 py-8 text-ink-900 font-body">
+
+  <div class="w-full max-w-sm space-y-6">
+    <div class="text-center">
+      <div class="w-14 h-14 rounded-2xl seal mx-auto mb-3 shadow-md"></div>
+      <h1 class="font-display text-2xl font-bold text-ink-900">Scholar<span class="text-gold-600">Ledger</span></h1>
+      <p class="text-xs text-ink-500 mt-1 font-medium">Administrator & Counselor Gateway</p>
+    </div>
+
+    <form id="login-form" class="bg-white rounded-3xl shadow-card border border-ink-100 p-6 sm:p-7 space-y-4">
+      <div>
+        <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Admin Email</label>
+        <input type="email" id="login-email" required autocomplete="username" value="admin@scholarledger.internal"
+          class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs text-ink-900 focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition"
+          placeholder="admin@scholarledger.internal">
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs font-bold uppercase text-ink-700">Password</label>
+          <button type="button" onclick="fillDefaultAdmin()" class="text-[10px] text-gold-600 font-semibold hover:underline">Use Default</button>
+        </div>
+        <input type="password" id="login-password" required autocomplete="current-password" value="admin123"
+          class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs text-ink-900 focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition"
+          placeholder="••••••••">
+      </div>
+
+      <p id="login-error" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3 leading-relaxed"></p>
+
+      <button type="submit" id="login-btn"
+        class="w-full bg-ink-900 hover:bg-ink-800 text-white font-bold text-xs rounded-xl py-3 transition shadow-xs">
+        Log In to Admin Console
+      </button>
+
+      <div class="pt-2 text-center border-t border-ink-100">
+        <p class="text-xs text-ink-500">Are you a student?</p>
+        <div class="flex items-center justify-center gap-3 mt-2 text-xs font-semibold">
+          <a href="student-login.html" class="text-gold-600 hover:text-gold-700 hover:underline">Student Login →</a>
+          <span class="text-ink-300">·</span>
+          <a href="student-register.html" class="text-ink-700 hover:text-ink-900 hover:underline">Register →</a>
+        </div>
+      </div>
+    </form>
+
+    <p class="text-center text-[11px] text-ink-400">ScholarLedger Multi-Scheme Scholarship Tracker & Ledger</p>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  function fillDefaultAdmin() {
+    document.getElementById("login-email").value = "admin@scholarledger.internal";
+    document.getElementById("login-password").value = "admin123";
+  }
+
+  const form = document.getElementById("login-form");
+  const errorBox = document.getElementById("login-error");
+  const btn = document.getElementById("login-btn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("hidden");
+    btn.disabled = true;
+    btn.textContent = "Authenticating...";
+    try {
+      await login(
+        document.getElementById("login-email").value.trim(),
+        document.getElementById("login-password").value
+      );
+      window.location.href = "index.html";
+    } catch (err) {
+      errorBox.textContent = friendlyError(err) || "Invalid credentials. Please verify your email and password.";
+      errorBox.classList.remove("hidden");
+      btn.disabled = false;
+      btn.textContent = "Log In to Admin Console";
+    }
+  });
+</script>
+</body>
+</html>

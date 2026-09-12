@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Profile · ScholarLedger</title>
+<meta name="description" content="Detailed student scholarship profile, academic history, applications, bank accounts, and support inquiries.">
+<meta property="og:title" content="Student Profile · ScholarLedger">
+<meta property="og:description" content="Detailed student scholarship profile, academic history, applications, bank accounts, and support inquiries.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="js/admin-auth.js"></script>
+</head>
+<body class="bg-paper min-h-screen text-ink-900">
+
+  <div class="flex min-h-screen w-full max-w-full">
+    <aside id="sidebar"></aside>
+
+    <div class="flex-1 min-w-0 w-full max-w-full min-h-screen pb-24 md:pb-12">
+      <header id="topbar"></header>
+
+      <main class="px-3.5 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto space-y-6">
+
+        <!-- Top Breadcrumb & Action Row -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-xs">
+            <a href="students.html" class="font-medium text-ink-500 hover:text-ink-900 transition flex items-center gap-1">
+              <span>←</span>
+              <span>Students Directory</span>
+            </a>
+            <span class="text-ink-300">/</span>
+            <span id="breadcrumb-student-name" class="font-bold text-ink-800">Student Profile</span>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <a id="btn-quick-eligibility" href="#" class="btn-accent btn-compact shadow-xs active:scale-95">
+              <span>⚡ Check Eligibility</span>
+            </a>
+            <button onclick="editFromProfile()" class="btn-secondary btn-compact cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-ink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span>Edit Details</span>
+            </button>
+            <button id="btn-delete-profile" class="btn-danger btn-compact cursor-pointer">
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Master Student Profile Header Card -->
+        <div id="profile-header-card" class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 transition">
+          <div class="py-6 text-center text-ink-400 text-xs">
+            Loading student profile…
+          </div>
+        </div>
+
+        <!-- Financial & Performance KPI Cards -->
+        <div id="profile-financial-cards" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Dynamic KPI cards populated by js -->
+        </div>
+
+        <!-- Structured Navigation Tabs (Compact with smooth horizontal scroll) -->
+        <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-1.5 flex items-center gap-1 overflow-x-auto no-scrollbar">
+          <button onclick="switchProfileTab('applications')" id="tab-btn-applications" class="profile-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-ink-900 text-white transition whitespace-nowrap cursor-pointer">
+            <span>📑 Applications</span>
+            <span id="tab-badge-apps" class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-white font-mono">0</span>
+          </button>
+          <button onclick="switchProfileTab('eligibility')" id="tab-btn-eligibility" class="profile-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-transparent text-ink-600 hover:bg-ink-100 transition whitespace-nowrap cursor-pointer">
+            <span>⚡ Eligibility Analysis</span>
+            <span id="tab-badge-eligibility" class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-bold font-mono">0</span>
+          </button>
+          <button onclick="switchProfileTab('personal')" id="tab-btn-personal" class="profile-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-transparent text-ink-600 hover:bg-ink-100 transition whitespace-nowrap cursor-pointer">
+            <span>👤 Academic & Personal</span>
+          </button>
+          <button onclick="switchProfileTab('bank')" id="tab-btn-bank" class="profile-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-transparent text-ink-600 hover:bg-ink-100 transition whitespace-nowrap cursor-pointer">
+            <span>🏦 Bank & DBT</span>
+          </button>
+          <button onclick="switchProfileTab('inquiries')" id="tab-btn-inquiries" class="profile-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-transparent text-ink-600 hover:bg-ink-100 transition whitespace-nowrap cursor-pointer">
+            <span>💬 Support Inquiries</span>
+            <span id="tab-badge-inquiries" class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-900 font-bold font-mono hidden">0</span>
+          </button>
+          <button onclick="switchProfileTab('documents')" id="tab-btn-documents" class="profile-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-transparent text-ink-600 hover:bg-ink-100 transition whitespace-nowrap cursor-pointer">
+            <span>📁 Document Vault</span>
+          </button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ============================================================ -->
+        <!-- TAB 1: SCHOLARSHIP APPLICATIONS -->
+        <!-- ============================================================ -->
+        <section id="tab-content-applications" class="profile-tab-panel space-y-3.5">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h2 class="font-display text-sm sm:text-base font-bold text-ink-900">Scholarship Applications</h2>
+              <p class="text-xs text-ink-500">Track and manage scholarship applications for this student.</p>
+            </div>
+            <button id="new-application-btn" class="btn-accent btn-compact shadow-xs active:scale-95 cursor-pointer">
+              <span>+ New Application</span>
+            </button>
+          </div>
+
+          <div id="applications-container" class="space-y-3">
+            <p class="text-xs text-ink-400 bg-white p-6 rounded-2xl border border-ink-100 text-center">Loading applications…</p>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: AUTOMATIC SCHOLARSHIP ELIGIBILITY TABLE -->
+        <!-- ============================================================ -->
+        <section id="tab-content-eligibility" class="profile-tab-panel hidden space-y-3.5">
+          <!-- Summary Metrics Strip -->
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-ink-100">
+              <div>
+                <h2 class="font-display text-sm sm:text-base font-bold text-ink-900">Eligibility Analysis</h2>
+                <p class="text-xs text-ink-500">Criteria matched: Category, Income, State, Percentage & Course.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="eligibility.html" class="btn-secondary btn-compact">
+                  <span>Eligibility Simulator →</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Metric Badges -->
+            <div id="eligibility-metrics-bar" class="grid grid-cols-3 gap-2.5 pt-3 text-center">
+              <div class="p-2.5 sm:p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">Eligible Schemes</span>
+                <span id="metric-eligible-count" class="font-display font-bold text-base sm:text-lg text-emerald-900 mt-0.5 block font-mono">0</span>
+              </div>
+              <div class="p-2.5 sm:p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Needs Review</span>
+                <span id="metric-review-count" class="font-display font-bold text-base sm:text-lg text-amber-900 mt-0.5 block font-mono">0</span>
+              </div>
+              <div class="p-2.5 sm:p-3 bg-red-50/70 border border-red-200 rounded-xl">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-red-800 block">Not Eligible</span>
+                <span id="metric-ineligible-count" class="font-display font-bold text-base sm:text-lg text-red-900 mt-0.5 block font-mono">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Eligibility Evaluation Table -->
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card overflow-hidden">
+            <div class="px-4 py-3 border-b border-ink-100 flex items-center justify-between">
+              <h3 class="font-display font-bold text-xs sm:text-sm text-ink-900">Available Schemes Evaluation</h3>
+              <span id="total-evaluated-label" class="text-xs text-ink-500 font-mono font-semibold">0 scanned</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-ink-50/80 border-b border-ink-100 text-ink-500 font-bold uppercase text-[10px] tracking-wider">
+                    <th class="py-2.5 px-3.5 sm:px-4">Scheme</th>
+                    <th class="py-2.5 px-3.5 sm:px-4">Amount</th>
+                    <th class="py-2.5 px-3.5 sm:px-4">Status</th>
+                    <th class="py-2.5 px-3.5 sm:px-4">Match Breakdown</th>
+                    <th class="py-2.5 px-3.5 sm:px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="eligibility-table-body" class="divide-y divide-ink-100">
+                  <tr>
+                    <td colspan="5" class="py-8 text-center text-ink-400">Evaluating schemes against student criteria…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 3: ACADEMIC & PERSONAL RECORD -->
+        <!-- ============================================================ -->
+        <section id="tab-content-personal" class="profile-tab-panel hidden space-y-3.5">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            
+            <!-- Card 1: Academic Profile -->
+            <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 space-y-3">
+              <div class="flex items-center gap-2 pb-2.5 border-b border-ink-100">
+                <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center text-xs font-bold">🎓</span>
+                <div>
+                  <h3 class="font-display font-bold text-xs sm:text-sm text-ink-900">Academic Information</h3>
+                  <p class="text-[10px] text-ink-400">Course & college registration</p>
+                </div>
+              </div>
+              <div id="grid-academic" class="space-y-2 text-xs"></div>
+            </div>
+
+            <!-- Card 2: Personal & Family Background -->
+            <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 space-y-3">
+              <div class="flex items-center gap-2 pb-2.5 border-b border-ink-100">
+                <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-xs font-bold">👤</span>
+                <div>
+                  <h3 class="font-display font-bold text-xs sm:text-sm text-ink-900">Personal & Family</h3>
+                  <p class="text-[10px] text-ink-400">Identity, parents & reservation</p>
+                </div>
+              </div>
+              <div id="grid-personal" class="space-y-2 text-xs"></div>
+            </div>
+
+            <!-- Card 3: Residential & Address -->
+            <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 space-y-3 md:col-span-2 lg:col-span-1">
+              <div class="flex items-center gap-2 pb-2.5 border-b border-ink-100">
+                <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-xs font-bold">📍</span>
+                <div>
+                  <h3 class="font-display font-bold text-xs sm:text-sm text-ink-900">Residential Address</h3>
+                  <p class="text-[10px] text-ink-400">Postal & domicile details</p>
+                </div>
+              </div>
+              <div id="grid-address" class="space-y-2 text-xs"></div>
+            </div>
+
+          </div>
+
+          <!-- Notes Card -->
+          <div id="card-student-notes" class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5">
+            <h3 class="font-display font-bold text-xs sm:text-sm text-ink-900 mb-1.5">Coordinator Notes & Remarks</h3>
+            <p id="student-notes-content" class="text-xs text-ink-700 whitespace-pre-line bg-ink-50/70 p-3 rounded-xl border border-ink-100">
+              No coordinator notes recorded for this student yet.
+            </p>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 4: BANK & DBT DETAILS -->
+        <!-- ============================================================ -->
+        <section id="tab-content-bank" class="profile-tab-panel hidden space-y-3.5">
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-ink-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center text-sm font-bold shadow-2xs">
+                  🏦
+                </div>
+                <div>
+                  <h3 class="font-display font-bold text-xs sm:text-sm text-ink-900">Direct Benefit Transfer (DBT) Account</h3>
+                  <p class="text-[11px] text-ink-500">Direct credit bank credentials for scholarship funds</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-bold rounded-full flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Aadhaar Seeding Active</span>
+                </span>
+              </div>
+            </div>
+
+            <div id="grid-bank-details" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <!-- Rendered by js -->
+            </div>
+
+            <div class="bg-amber-50/60 border border-amber-200/70 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-900">
+              <span class="text-sm shrink-0">💡</span>
+              <div class="text-[11px] leading-relaxed">
+                <span class="font-bold">Nodal Advice:</span>
+                Scholarship funds are directly transferred through NPCI Aadhaar Payment Bridge System (APBS). Verify that this account is active and seeded with Aadhaar.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 5: SUPPORT INQUIRIES & REPLIES -->
+        <!-- ============================================================ -->
+        <section id="tab-content-inquiries" class="profile-tab-panel hidden space-y-3.5">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h2 class="font-display text-sm sm:text-base font-bold text-ink-900">Support Inquiries & Replies</h2>
+              <p class="text-xs text-ink-500">Student questions sent from their portal, along with coordinator responses.</p>
+            </div>
+            <a href="helpdesk.html" class="btn-secondary btn-compact">
+              <span>Open Helpdesk →</span>
+            </a>
+          </div>
+
+          <div id="student-inquiries-list" class="space-y-3">
+            <p class="text-xs text-ink-400 bg-white p-6 rounded-2xl border border-ink-100 text-center">Loading inquiries…</p>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- TAB 6: DOCUMENT VAULT -->
+        <!-- ============================================================ -->
+        <section id="tab-content-documents" class="profile-tab-panel hidden space-y-3.5">
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 space-y-3.5">
+            <div class="flex items-center justify-between pb-3 border-b border-ink-100">
+              <div>
+                <h2 class="font-display text-sm sm:text-base font-bold text-ink-900">Document Vault</h2>
+                <p class="text-xs text-ink-500">Verification checklist required for scholarship disbursement.</p>
+              </div>
+              <span id="doc-verified-count" class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-full">
+                0 / 0 Verified
+              </span>
+            </div>
+
+            <div id="documents-checklist" class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              <!-- Rendered by js -->
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <nav id="bottom-nav"></nav>
+
+  <!-- Confirm Delete Modal -->
+  <div id="confirm-modal" class="modal-root hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-900/50 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white w-full max-w-sm rounded-2xl opacity-0 scale-95 p-5 border border-ink-100 shadow-xl">
+      <h3 id="confirm-title" class="font-display text-sm sm:text-base font-bold text-ink-900 mb-1">Delete Student?</h3>
+      <p id="confirm-message" class="text-xs text-ink-500 mb-4 leading-relaxed"></p>
+      <div class="flex gap-2.5">
+        <button id="confirm-no" class="flex-1 btn-secondary btn-compact py-2 cursor-pointer">Cancel</button>
+        <button id="confirm-yes" class="flex-1 btn-danger btn-compact py-2 cursor-pointer">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Inquiries Reply Modal -->
+  <div id="student-reply-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+    <div onclick="closeStudentReplyModal()" class="absolute inset-0 bg-ink-950/70 backdrop-blur-xs"></div>
+    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl p-4 sm:p-5 border border-ink-100 z-10 space-y-3.5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-start justify-between border-b border-ink-100 pb-2.5">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-gold-600 font-mono">Advisory Desk</span>
+          <h3 class="font-display font-bold text-sm sm:text-base text-ink-900 mt-0.5">Reply to Student Inquiry</h3>
+        </div>
+        <button onclick="closeStudentReplyModal()" class="p-1 rounded-lg text-ink-400 hover:text-ink-800 hover:bg-ink-100 transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="bg-ink-50/70 rounded-xl border border-ink-200/80 p-3 space-y-1.5 text-xs">
+        <div class="flex items-center justify-between">
+          <span id="st-reply-subject" class="font-bold text-ink-900 truncate">Inquiry Subject</span>
+          <span id="st-reply-category" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-ink-200 text-ink-800 shrink-0">Category</span>
+        </div>
+        <p id="st-reply-message" class="text-ink-800 font-medium bg-white p-2.5 rounded-lg border border-ink-100 whitespace-pre-line text-xs">Message...</p>
+      </div>
+
+      <!-- Quick Template Shortcuts -->
+      <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-ink-500 mb-1">
+          Insert Template Reply:
+        </label>
+        <div class="flex flex-wrap gap-1">
+          <button type="button" onclick="insertStudentTemplate('verification')" class="px-2 py-0.5 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-md text-[10px] font-medium transition cursor-pointer">
+            Verification In Progress
+          </button>
+          <button type="button" onclick="insertStudentTemplate('dbt_batch')" class="px-2 py-0.5 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-md text-[10px] font-medium transition cursor-pointer">
+            DBT Batch Scheduled
+          </button>
+          <button type="button" onclick="insertStudentTemplate('doc_fix')" class="px-2 py-0.5 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-md text-[10px] font-medium transition cursor-pointer">
+            Document Deficiency
+          </button>
+          <button type="button" onclick="insertStudentTemplate('sanctioned')" class="px-2 py-0.5 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-md text-[10px] font-medium transition cursor-pointer">
+            Sanction Approved
+          </button>
+        </div>
+      </div>
+
+      <form id="st-reply-form" onsubmit="handleStSubmitReply(event)" class="space-y-3">
+        <input type="hidden" id="st-reply-id" value="">
+        <div>
+          <label class="block text-[11px] font-bold text-ink-800 mb-1">Coordinator Reply *</label>
+          <textarea id="st-reply-text" rows="3" required class="form-input-compact w-full text-xs" placeholder="Type coordinator advice or response…"></textarea>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <select id="st-reply-status" class="rounded-xl border border-ink-200 px-2.5 py-1.5 text-xs outline-none bg-white font-medium">
+            <option value="Responded">Mark Responded</option>
+            <option value="Resolved">Mark Resolved</option>
+          </select>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="closeStudentReplyModal()" class="btn-secondary btn-compact cursor-pointer">Cancel</button>
+            <button type="submit" id="st-reply-submit-btn" class="btn-accent btn-compact cursor-pointer">Send Reply</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/eligibility-engine.js"></script>
+<script src="js/student-detail.js"></script>
+</body>
+</html>

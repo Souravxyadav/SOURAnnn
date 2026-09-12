@@ -1,0 +1,81 @@
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink: {
+          50: "#eef1f6",
+          100: "#dbe1ec",
+          200: "#b8c5dc",
+          300: "#8fa3c7",
+          400: "#5a7099",
+          500: "#3b4f73",
+          600: "#2b3c60",
+          700: "#1f2d4c",
+          800: "#182238",
+          900: "#131c2e",
+          950: "#0c1322",
+        },
+        gold: {
+          50: "#fbf6e8",
+          100: "#f3e6bd",
+          200: "#e8d28a",
+          300: "#dfc15c",
+          400: "#d8b23e",
+          500: "#c9a227",
+          600: "#a8841c",
+          700: "#856513",
+          800: "#684e0e",
+          900: "#533e0b",
+          950: "#3b2b06",
+        },
+        paper: "#f7f6f2",
+        brand: {
+          primary: "#131c2e",
+          primaryHover: "#1f2d4c",
+          primaryActive: "#0c1322",
+          accent: "#c9a227",
+          accentHover: "#d8b23e",
+          accentActive: "#a8841c",
+          surface: "#ffffff",
+          muted: "#f7f6f2",
+        },
+        status: {
+          success: "#059669",
+          successLight: "#ecfdf5",
+          warning: "#d97706",
+          warningLight: "#fffbeb",
+          danger: "#e11d48",
+          dangerLight: "#fff1f2",
+          info: "#0284c7",
+          infoLight: "#f0f9ff",
+        },
+      },
+      fontFamily: {
+        display: ["Sora", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
+      boxShadow: {
+        "2xs": "0 1px 2px rgba(19,28,46,0.04)",
+        card: "0 1px 3px rgba(19,28,46,0.06), 0 1px 2px rgba(19,28,46,0.04)",
+        "card-hover": "0 6px 16px -3px rgba(19,28,46,0.08), 0 2px 6px -2px rgba(19,28,46,0.04)",
+        "card-focus": "0 0 0 2px #c9a227, 0 4px 12px rgba(19,28,46,0.08)",
+      },
+      ringColor: {
+        DEFAULT: "#c9a227",
+        gold: "#c9a227",
+        ink: "#131c2e",
+      },
+      ringOffsetColor: {
+        DEFAULT: "#ffffff",
+      },
+      transitionTimingFunction: {
+        standard: "cubic-bezier(0.16, 1, 0.3, 1)",
+      },
+      transitionDuration: {
+        fast: "150ms",
+        normal: "200ms",
+      },
+    },
+  },
+};

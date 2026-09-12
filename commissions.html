@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commissions & Student Fees Ledger · ScholarLedger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="js/admin-auth.js"></script>
+</head>
+<body class="bg-paper min-h-screen text-ink-900 font-body">
+
+  <div class="flex min-h-screen w-full max-w-full">
+    <aside id="sidebar"></aside>
+
+    <div class="flex-1 min-w-0 w-full max-w-full min-h-screen pb-24 md:pb-8">
+      <header id="topbar"></header>
+
+      <main class="px-3.5 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto space-y-6">
+
+        <!-- Header Notice / Hero Banner -->
+        <div class="bg-gradient-to-r from-ink-900 via-ink-800 to-ink-900 text-white rounded-2xl p-4 sm:p-5 border border-ink-700 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-gold-500/20 text-gold-400 border border-gold-500/30">Financial Engine</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Auto Settlements</span>
+            </div>
+            <h1 class="font-display text-base sm:text-lg font-bold text-white">Commissions & Student Fees Ledger</h1>
+            <p class="text-xs text-ink-300 max-w-2xl leading-relaxed mt-0.5">
+              Track scholarship grant disbursements and center advisory fees with real-time balance reconciliation.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <button type="button" onclick="openRecordPaymentModal()" class="btn-accent btn-compact shadow-xs active:scale-95">
+              <span>+ Record Fee / Disbursal</span>
+            </button>
+            <button type="button" onclick="exportCommissionsCsv()" class="btn-compact bg-white/10 hover:bg-white/20 text-white border border-white/20 transition flex items-center gap-1.5 cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Export CSV</span>
+            </button>
+            <button type="button" onclick="loadCommissionsData()" title="Refresh Ledger" class="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl transition flex items-center justify-center cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Metrics Grid (5 Focused Metric Tiles) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <!-- Metric 1: Total Sanctioned Grant -->
+          <div class="bg-white rounded-xl border border-ink-100 p-3.5 shadow-card hover:border-gold-300 transition">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-ink-400 block">Sanctioned Grants</span>
+            <span id="stat-scholarship-volume" class="font-display font-bold text-base sm:text-lg text-ink-900 mt-0.5 block font-mono">₹0</span>
+            <span class="text-[10px] text-ink-500 mt-0.5 block truncate">Approved scholarships</span>
+          </div>
+
+          <!-- Metric 2: Disbursed to Student -->
+          <div class="bg-white rounded-xl border border-ink-100 p-3.5 shadow-card hover:border-emerald-300 transition">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Student Disbursed</span>
+            <span id="stat-student-received" class="font-display font-bold text-base sm:text-lg text-emerald-700 mt-0.5 block font-mono">₹0</span>
+            <span class="text-[10px] text-emerald-600 mt-0.5 block truncate">Direct bank transfers</span>
+          </div>
+
+          <!-- Metric 3: Commission / Fee Due -->
+          <div class="bg-white rounded-xl border border-ink-100 p-3.5 shadow-card hover:border-gold-300 transition">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-ink-500 block">Center Fee Due</span>
+            <span id="stat-total-commission" class="font-display font-bold text-base sm:text-lg text-ink-900 mt-0.5 block font-mono">₹0</span>
+            <span class="text-[10px] text-ink-500 mt-0.5 block truncate">Contracted fee amount</span>
+          </div>
+
+          <!-- Metric 4: Received by Me -->
+          <div class="bg-white rounded-xl border border-ink-100 p-3.5 shadow-card hover:border-gold-300 transition">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gold-700 block">I Have Received</span>
+            <span id="stat-collected" class="font-display font-bold text-base sm:text-lg text-gold-700 mt-0.5 block font-mono">₹0</span>
+            <span class="text-[10px] text-gold-600 mt-0.5 block truncate">Collected in center account</span>
+          </div>
+
+          <!-- Metric 5: Balance Due to Me -->
+          <div class="bg-white rounded-xl border border-ink-100 p-3.5 shadow-card col-span-2 sm:col-span-1 lg:col-span-1 hover:border-amber-300 transition">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">Balance Due to Me</span>
+            <span id="stat-pending" class="font-display font-bold text-base sm:text-lg text-amber-700 mt-0.5 block font-mono">₹0</span>
+            <span class="text-[10px] text-amber-600 mt-0.5 block truncate">Outstanding center fees</span>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-ink-100 shadow-card space-y-3">
+          
+          <!-- Top row: Search input + Selects -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-md">
+              <input id="comm-search" oninput="filterLedger()" type="search" placeholder="Search student, mobile, STU code, scheme…"
+                class="form-input-compact w-full pl-9">
+              <svg class="w-4 h-4 text-ink-400 absolute left-3 top-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="filter-academic-year" onchange="filterLedger()" class="form-input-compact">
+                <option value="all">All Sessions</option>
+              </select>
+
+              <select id="filter-payment-status" onchange="filterLedger()" class="form-input-compact">
+                <option value="all">All Fee Statuses</option>
+                <option value="paid">✓ Fully Settled</option>
+                <option value="partial">Partially Paid</option>
+                <option value="unpaid">Fee Due / Unpaid</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Bottom tabs: Workflow Scope -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-ink-100">
+            <div class="flex flex-wrap items-center gap-1.5" id="scope-tabs">
+              <button type="button" onclick="setCommissionScope('approved')" id="scope-btn-approved" class="scope-tab text-xs font-semibold px-3 py-1.5 rounded-xl bg-ink-900 text-white transition shadow-xs flex items-center gap-1">
+                <span>Approved in System</span>
+                <span id="badge-count-approved" class="ml-1 px-1.5 py-0.2 bg-gold-500 text-ink-950 font-bold rounded-md text-[10px]">0</span>
+              </button>
+              <button type="button" onclick="setCommissionScope('pending-fee')" id="scope-btn-pending-fee" class="scope-tab text-xs font-medium px-3 py-1.5 rounded-xl bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
+                <span>Fee Balance Due</span>
+              </button>
+              <button type="button" onclick="setCommissionScope('settled')" id="scope-btn-settled" class="scope-tab text-xs font-medium px-3 py-1.5 rounded-xl bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
+                <span>Fully Settled</span>
+              </button>
+              <button type="button" onclick="setCommissionScope('all')" id="scope-btn-all" class="scope-tab text-xs font-medium px-3 py-1.5 rounded-xl bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
+                <span>All Applications</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span id="ledger-count" class="text-xs font-bold text-ink-500 font-mono">0 records</span>
+              <button type="button" onclick="resetLedgerFilters()" class="text-xs text-gold-600 hover:text-gold-700 font-semibold underline">Reset Filters</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Ledger Cards Section (No Horizontal Scroll - Pure Responsive Card View) -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-ink-700 uppercase tracking-wider">Student Financial Records</span>
+              <span id="ledger-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gold-500/20 text-gold-800 border border-gold-400/30">0 records</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-ink-500">
+              <span class="flex items-center gap-1 font-semibold text-emerald-700">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Automatic Fee & Disbursal Breakdown</span>
+              </span>
+            </div>
+          </div>
+
+          <div id="ledger-cards-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="col-span-full text-center py-12 text-ink-400 bg-white rounded-2xl border border-ink-100 p-8 shadow-card">
+              Loading commissions & student fees ledger…
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <nav id="bottom-nav"></nav>
+
+  <!-- Payment History Modal -->
+  <div id="payment-history-modal" class="modal-root hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-modal-backdrop onclick="closeModal('payment-history-modal')" class="absolute inset-0 bg-ink-950/60 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl z-10 p-5 sm:p-6 space-y-4 border border-ink-100 max-h-[85vh] flex flex-col translate-y-full md:translate-y-0 md:opacity-0 md:scale-95 opacity-100 scale-100 transition-all">
+      <div class="flex items-start justify-between border-b border-ink-100 pb-3">
+        <div>
+          <h4 class="font-display font-bold text-base text-ink-900" id="hist-modal-title">Payment & Disbursal History</h4>
+          <p class="text-xs text-ink-500" id="hist-modal-subtitle">Logged transactions for this student application</p>
+        </div>
+        <button type="button" onclick="closeModal('payment-history-modal')" class="w-7 h-7 rounded-full bg-ink-50 text-ink-400 hover:text-ink-700 flex items-center justify-center text-xs">✕</button>
+      </div>
+
+      <div id="hist-modal-list" class="space-y-2 overflow-y-auto flex-1 pr-1">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="pt-3 border-t border-ink-100 flex justify-end">
+        <button type="button" onclick="closeModal('payment-history-modal')" class="px-4 py-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Record Payment / Settlement Modal (Fixed data-sheet & responsive transitions) -->
+  <div id="payment-modal" class="modal-root hidden fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+    <div data-modal-backdrop onclick="closeModal('payment-modal')" class="absolute inset-0 bg-ink-950/60 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white w-full md:max-w-lg md:rounded-3xl rounded-t-3xl max-h-[92vh] overflow-y-auto translate-y-full md:translate-y-0 md:opacity-0 md:scale-95 opacity-100 scale-100 shadow-2xl transition-all z-10 flex flex-col">
+      <div class="sticky top-0 bg-white/95 backdrop-blur-xs border-b border-ink-100 px-6 py-4 flex items-center justify-between z-10">
+        <div>
+          <h3 class="font-display text-base font-bold text-ink-900" id="payment-modal-title">Record Commission & Fee Settlement</h3>
+          <p class="text-xs text-ink-500 mt-0.5">Record money received by center or disbursed to student.</p>
+        </div>
+        <button type="button" onclick="closeModal('payment-modal')" class="w-8 h-8 rounded-full bg-ink-50 hover:bg-ink-100 text-ink-500 flex items-center justify-center text-sm transition">✕</button>
+      </div>
+
+      <form id="payment-form" onsubmit="onSavePayment(event)" class="p-6 space-y-4 flex-1">
+        
+        <!-- Transaction Type Switcher -->
+        <div>
+          <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Payment Nature *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center gap-2.5 p-3 bg-ink-50 rounded-xl border border-ink-200 cursor-pointer hover:bg-gold-50/50 transition">
+              <input type="radio" name="pay-category" value="Commission" checked onchange="onPaymentCategoryChange(this.value)" class="text-gold-500 accent-gold-600">
+              <div>
+                <p class="text-xs font-bold text-ink-900 leading-tight">Received by Me (Center Fee)</p>
+                <p class="text-[10px] text-ink-500">Advisory commission fee</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-2.5 p-3 bg-ink-50 rounded-xl border border-ink-200 cursor-pointer hover:bg-emerald-50/50 transition">
+              <input type="radio" name="pay-category" value="Student" onchange="onPaymentCategoryChange(this.value)" class="text-emerald-500 accent-emerald-600">
+              <div>
+                <p class="text-xs font-bold text-ink-900 leading-tight">Received by Student</p>
+                <p class="text-[10px] text-ink-500">Scholarship grant disbursed</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Student Application Scheme *</label>
+          <select id="pay-app-id" onchange="onSelectAppForPayment(this.value)" required class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white font-medium">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Live Financial Summary for Chosen App -->
+        <div id="pay-app-summary" class="hidden bg-ink-50/80 p-4 rounded-xl border border-ink-100 space-y-2 text-xs">
+          <div class="flex items-center justify-between pb-1.5 border-b border-ink-200">
+            <span class="text-ink-600 font-medium">Scholarship Award (Grant):</span>
+            <span id="pay-sum-grant" class="font-bold text-ink-900 font-mono">₹0</span>
+          </div>
+          <div class="flex items-center justify-between pb-1.5 border-b border-ink-200">
+            <span class="text-ink-600 font-medium">Student Net Entitlement (Award - Fee):</span>
+            <span id="pay-sum-student-net" class="font-bold text-emerald-700 font-mono">₹0</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+            <div class="p-2 bg-white rounded-lg border border-ink-100">
+              <span class="text-ink-400 block text-[10px] font-semibold uppercase">Commission Due</span>
+              <span id="pay-sum-due" class="font-bold text-ink-900 font-mono">₹0</span>
+            </div>
+            <div class="p-2 bg-white rounded-lg border border-ink-100">
+              <span class="text-gold-700 block text-[10px] font-semibold uppercase">Already Paid</span>
+              <span id="pay-sum-paid" class="font-bold text-gold-700 font-mono">₹0</span>
+            </div>
+            <div class="p-2 bg-white rounded-lg border border-ink-100 cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition" onclick="autoFillRemainingFee()" title="Click to autofill remaining balance">
+              <span class="text-amber-800 block text-[10px] font-semibold uppercase">Fee Due</span>
+              <span id="pay-sum-bal" class="font-bold text-amber-700 font-mono">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold uppercase text-ink-700">Amount (₹) *</label>
+              <button type="button" onclick="autoFillRemainingFee()" id="btn-autofill-fee" class="text-[10px] text-gold-600 font-semibold hover:underline">Autofill Due</button>
+            </div>
+            <input type="number" id="pay-amount" required step="1" min="1" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs font-bold text-ink-900 outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 font-mono" placeholder="0">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Payment Date *</label>
+            <input type="date" id="pay-date" required class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs text-ink-900 outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Payment Method *</label>
+            <select id="pay-mode" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <option value="UPI / QR">UPI / QR Code</option>
+              <option value="Cash" selected>Cash</option>
+              <option value="Bank Transfer">Bank Transfer / NEFT</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Direct DBT">Direct Benefit Transfer (DBT)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Reference / UTR / Memo No</label>
+            <input type="text" id="pay-reference" placeholder="e.g. UPI Ref / UTR / Cash Memo" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs text-ink-900 outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Collector / Received By</label>
+          <input type="text" id="pay-collected-by" placeholder="Admin / Counselor Name" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs text-ink-900 outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Internal Remarks / Notes</label>
+          <textarea id="pay-remarks" rows="2" placeholder="e.g. Paid in full after 1st installment disbursement" class="w-full rounded-xl border border-ink-200 p-3 text-xs text-ink-900 outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"></textarea>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-3 border-t border-ink-100">
+          <button type="button" onclick="closeModal('payment-modal')" class="px-4 py-2.5 border border-ink-200 text-ink-700 text-xs font-semibold rounded-xl hover:bg-ink-50 transition">
+            Cancel
+          </button>
+          <button type="submit" id="pay-submit-btn" class="px-5 py-2.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95">
+            <span>✓ Save Payment</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Receipt Voucher Modal (Printable) -->
+  <div id="receipt-modal" class="modal-root hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-modal-backdrop onclick="closeModal('receipt-modal')" class="absolute inset-0 bg-ink-950/60 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 space-y-4 border border-ink-200 translate-y-full md:translate-y-0 md:opacity-0 md:scale-95 opacity-100 scale-100 transition-all" id="receipt-printable-area">
+      <div class="flex items-start justify-between border-b border-ink-200 pb-3">
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-gold-500"></span>
+            <h4 class="font-display font-bold text-base text-ink-900">Payment Receipt Voucher</h4>
+          </div>
+          <p class="text-[11px] text-ink-500 font-mono mt-0.5" id="rec-voucher-no">Voucher #SL-REC-0000</p>
+        </div>
+        <button type="button" onclick="closeModal('receipt-modal')" class="text-ink-400 hover:text-ink-700">✕</button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div class="flex justify-between py-1 border-b border-ink-50">
+          <span class="text-ink-500">Student:</span>
+          <span class="font-bold text-ink-900" id="rec-student-name">—</span>
+        </div>
+        <div class="flex justify-between py-1 border-b border-ink-50">
+          <span class="text-ink-500">Scholarship Scheme:</span>
+          <span class="font-semibold text-ink-800 max-w-[220px] text-right truncate" id="rec-scholarship-name">—</span>
+        </div>
+        <div class="flex justify-between py-1 border-b border-ink-50">
+          <span class="text-ink-500">Transaction Date:</span>
+          <span class="font-mono text-ink-800" id="rec-date">—</span>
+        </div>
+        <div class="flex justify-between py-1 border-b border-ink-50">
+          <span class="text-ink-500">Nature:</span>
+          <span class="font-bold text-gold-700" id="rec-nature">—</span>
+        </div>
+        <div class="flex justify-between py-1 border-b border-ink-50">
+          <span class="text-ink-500">Mode & Reference:</span>
+          <span class="font-mono text-ink-800" id="rec-mode-ref">—</span>
+        </div>
+        <div class="p-3.5 bg-gold-50 rounded-2xl border border-gold-200 flex justify-between items-center mt-2">
+          <span class="font-bold text-ink-900 text-xs">Amount Received:</span>
+          <span class="text-xl font-bold font-display text-ink-950" id="rec-amount">₹0</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-ink-100">
+        <button type="button" onclick="window.print()" class="px-4 py-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-bold rounded-xl transition shadow-xs flex items-center gap-1.5 active:scale-95">
+          <span>🖨️ Print Receipt</span>
+        </button>
+        <button type="button" onclick="closeModal('receipt-modal')" class="px-3 py-2 bg-ink-100 hover:bg-ink-200 text-ink-800 text-xs font-semibold rounded-xl transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="js/commissions.js"></script>
+</body>
+</html>
+

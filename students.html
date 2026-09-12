@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students Directory · ScholarLedger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="js/admin-auth.js"></script>
+</head>
+<body class="bg-paper min-h-screen text-ink-900 font-body">
+
+  <div class="flex min-h-screen w-full max-w-full">
+    <aside id="sidebar"></aside>
+
+    <div class="flex-1 min-w-0 w-full max-w-full min-h-screen pb-24 md:pb-8">
+      <header id="topbar"></header>
+
+      <main class="px-3.5 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto space-y-6">
+
+        <!-- Pending Approvals Banner / Action Center -->
+        <div id="pending-approvals-section" class="hidden bg-amber-500/10 border border-amber-300 rounded-2xl p-5 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-base">⚠️</span>
+              <div>
+                <h3 class="font-display font-bold text-sm text-amber-950">Self-Registered Student Registrations</h3>
+                <p class="text-xs text-amber-800">Verify and activate incoming student profiles before linking scholarship schemes.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="pending-count-badge" class="px-2.5 py-1 bg-amber-100 text-amber-900 text-xs font-bold rounded-lg border border-amber-200">
+                0 Pending
+              </span>
+              <button onclick="approveAllPendingStudents()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition">
+                ✓ Approve All
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mb-3 text-xs text-amber-900 font-medium">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="select-all-pending-cb" onchange="toggleSelectAllPending(this)" class="w-4 h-4 rounded text-amber-600 border-amber-300">
+              <span>Select all pending records</span>
+            </label>
+            <button onclick="bulkApproveSelectedStudents()" class="text-xs font-bold text-emerald-800 hover:underline">Approve Selected</button>
+          </div>
+
+          <div id="pending-students-list" class="space-y-2 max-h-60 overflow-y-auto">
+            <!-- Rendered by students.js -->
+          </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="bg-white p-4 rounded-2xl border border-ink-100 shadow-card space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-lg">
+              <input id="search-input" type="search" placeholder="Search by name, student ID, mobile, course, college, state, district, email…"
+                class="w-full h-10 rounded-xl border border-ink-200 bg-ink-50/50 pl-10 pr-4 text-xs md:text-sm outline-none focus:border-gold-500 focus:bg-white focus:ring-1 focus:ring-gold-500 transition">
+              <svg class="w-4 h-4 text-ink-400 absolute left-3.5 top-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            </div>
+
+            <div class="flex items-center gap-3 justify-between sm:justify-end shrink-0">
+              <p id="result-count" class="text-xs font-bold text-ink-500 font-mono"></p>
+              <button onclick="openStudentForm()" class="h-10 px-4 bg-ink-900 hover:bg-ink-800 active:bg-ink-950 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 shrink-0">
+                <span>+ Add Student</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Extended Filter Selectors: 2-column mobile grid, auto-wrap on desktop -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap lg:items-center gap-2 pt-2.5 border-t border-ink-100">
+            <!-- Status Filter -->
+            <select id="status-filter" class="w-full lg:w-auto h-9 rounded-xl border border-ink-200 bg-ink-50/60 px-2.5 text-xs text-ink-800 outline-none focus:border-gold-500 focus:bg-white transition truncate">
+              <option value="ALL">All Statuses</option>
+              <option value="Active">Active Only</option>
+              <option value="Pending">Pending Only</option>
+              <option value="Inactive">Inactive Only</option>
+            </select>
+
+            <!-- Category Filter -->
+            <select id="category-filter" class="w-full lg:w-auto h-9 rounded-xl border border-ink-200 bg-ink-50/60 px-2.5 text-xs text-ink-800 outline-none focus:border-gold-500 focus:bg-white transition truncate">
+              <option value="ALL">All Categories</option>
+              <option value="General">General</option>
+              <option value="OBC">OBC</option>
+              <option value="EWS">EWS</option>
+              <option value="SC">SC</option>
+              <option value="ST">ST</option>
+            </select>
+
+            <!-- State Domicile Filter -->
+            <select id="state-filter" class="w-full lg:w-auto h-9 rounded-xl border border-ink-200 bg-ink-50/60 px-2.5 text-xs text-ink-800 outline-none focus:border-gold-500 focus:bg-white transition truncate">
+              <option value="ALL">All States</option>
+            </select>
+
+            <!-- Course Filter -->
+            <select id="course-filter" class="w-full lg:w-auto h-9 rounded-xl border border-ink-200 bg-ink-50/60 px-2.5 text-xs text-ink-800 outline-none focus:border-gold-500 focus:bg-white transition truncate">
+              <option value="ALL">All Courses</option>
+            </select>
+
+            <!-- Sort By -->
+            <select id="sort-filter" class="w-full lg:w-auto lg:ml-auto h-9 rounded-xl border border-ink-200 bg-ink-50/60 px-2.5 text-xs text-ink-800 outline-none focus:border-gold-500 focus:bg-white transition truncate">
+              <option value="newest">Sort: Recently Added</option>
+              <option value="name-asc">Sort: Name (A to Z)</option>
+              <option value="score-desc">Sort: Marks % (High to Low)</option>
+              <option value="income-asc">Sort: Family Income (Low to High)</option>
+            </select>
+
+            <!-- Reset Button -->
+            <button id="reset-filters-btn" onclick="resetStudentFilters()" class="col-span-2 sm:col-span-1 lg:col-span-auto h-9 px-3 rounded-xl border border-ink-200 bg-white hover:bg-ink-50 active:bg-ink-100 text-xs font-semibold text-ink-600 hover:text-ink-900 transition flex items-center justify-center cursor-pointer">
+              Reset Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- Students Grid -->
+        <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+          <div class="col-span-full text-center py-12 text-ink-400">Loading student directory…</div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <nav id="bottom-nav"></nav>
+
+  <!-- Add/Edit student modal -->
+  <div id="student-modal" class="modal-root hidden fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-950/60 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white w-full md:max-w-2xl md:rounded-3xl rounded-t-3xl max-h-[92vh] overflow-y-auto translate-y-full md:translate-y-0 md:opacity-0 md:scale-95 opacity-100 scale-100 shadow-2xl transition-all">
+      <div class="sticky top-0 bg-white/95 backdrop-blur-xs border-b border-ink-100 px-6 py-4.5 flex items-center justify-between z-10">
+        <div>
+          <h3 id="student-modal-title" class="font-display text-base font-bold text-ink-900">Add Student Record</h3>
+          <p class="text-xs text-ink-500 mt-0.5">Manage registration details and academic eligibility attributes.</p>
+        </div>
+        <button data-close-modal="student-modal" class="w-8 h-8 rounded-full bg-ink-50 hover:bg-ink-100 text-ink-500 flex items-center justify-center text-sm transition">✕</button>
+      </div>
+
+      <form id="student-form" class="p-6 space-y-4">
+        <input type="hidden" id="student-id">
+
+        <!-- 1. Identity & Names -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Full Name *</label>
+            <input required id="f-name" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="e.g. Rahul Kumar">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Student Code / ID</label>
+            <input id="f-code" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs font-mono outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="STU-2026-001">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Father's Name</label>
+            <input id="f-father" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="Father's full name">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Mother's Name</label>
+            <input id="f-mother" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="Mother's full name">
+          </div>
+        </div>
+
+        <!-- 2. Contact & Identity Numbers -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Mobile Number *</label>
+            <input required id="f-mobile" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="98XXXXXXXX">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Email Address</label>
+            <input type="email" id="f-email" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="student@example.com">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Aadhaar / ID Number</label>
+            <input id="f-aadhaar" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs font-mono outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="XXXX XXXX XXXX">
+          </div>
+        </div>
+
+        <!-- 3. Demographics & Reservation (Dropdowns) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Date of Birth</label>
+            <input type="date" id="f-dob" class="w-full rounded-xl border border-ink-200 px-3 py-2 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Gender</label>
+            <select id="f-gender" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Category</label>
+            <select id="f-category" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <option value="General">General</option>
+              <option value="OBC">OBC</option>
+              <option value="EWS">EWS</option>
+              <option value="SC">SC</option>
+              <option value="ST">ST</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Religion</label>
+            <select id="f-religion" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <option value="Hindu">Hindu</option>
+              <option value="Muslim">Muslim</option>
+              <option value="Christian">Christian</option>
+              <option value="Sikh">Sikh</option>
+              <option value="Buddhist">Buddhist</option>
+              <option value="Jain">Jain</option>
+              <option value="Parsi">Parsi</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">PwD (Disability Status)</label>
+            <select id="f-pwd" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <option value="No">No (General)</option>
+              <option value="Yes">Yes (PwD / Divyangjan)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Annual Family Income (₹)</label>
+            <input type="number" id="f-income" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="e.g. 180000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Record Status</label>
+            <select id="f-status" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <option value="Active">Active</option>
+              <option value="Pending">Pending Verification</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. Location Details (Cascading State & District) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">State *</label>
+            <select id="f-state" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <!-- Populated via getStateOptionsHtml() -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">District *</label>
+            <select id="f-district" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <!-- Dynamically populated based on State selection -->
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Full Permanent / Present Address</label>
+          <textarea id="f-address" rows="2" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="Village / House No, Street, Landmark, Pincode"></textarea>
+        </div>
+
+        <!-- 5. Academic Details -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Academic Course / Degree *</label>
+            <select id="f-course" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <!-- Populated with categorized options via getCourseOptionsHtml() -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">College / University</label>
+            <input id="f-college" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="e.g. Patna University">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Admission Year</label>
+            <select id="f-admission-year" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <!-- Populated with years -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Current Year / Semester</label>
+            <select id="f-semester" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 bg-white">
+              <!-- Populated with semester list -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Previous Academic Score (%)</label>
+            <input type="number" step="0.1" id="f-percentage" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="e.g. 78.5">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Administrative Notes</label>
+          <textarea id="f-notes" rows="2" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="Internal remarks, verified documents checklist…"></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-3 border-t border-ink-100">
+          <button type="button" data-close-modal="student-modal" class="flex-1 border border-ink-200 text-ink-700 text-xs font-semibold rounded-xl py-2.5 hover:bg-ink-50 transition">Cancel</button>
+          <button type="submit" id="student-save-btn" class="flex-1 bg-ink-900 hover:bg-ink-800 text-white text-xs font-bold rounded-xl py-2.5 shadow-xs transition">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm delete modal -->
+  <div id="confirm-modal" class="modal-root hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-950/60 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white w-full max-w-sm rounded-3xl opacity-0 scale-95 p-6 shadow-2xl">
+      <h3 id="confirm-title" class="font-display text-base font-bold text-ink-900 mb-1">Delete?</h3>
+      <p id="confirm-message" class="text-xs text-ink-500 mb-5 leading-relaxed"></p>
+      <div class="flex gap-3">
+        <button id="confirm-no" class="flex-1 border border-ink-200 text-ink-700 text-xs font-semibold rounded-xl py-2.5 hover:bg-ink-50 transition">Cancel</button>
+        <button id="confirm-yes" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl py-2.5 shadow-xs transition">Delete</button>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/students.js"></script>
+</body>
+</html>

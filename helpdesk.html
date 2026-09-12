@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Helpdesk & Inquiries · ScholarLedger</title>
+<meta name="description" content="Manage student help inquiries, provide official coordinator replies, and track resolution of student questions.">
+<meta property="og:title" content="Student Helpdesk & Inquiries · ScholarLedger">
+<meta property="og:description" content="Manage student help inquiries, provide official coordinator replies, and track resolution of student questions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="js/admin-auth.js"></script>
+</head>
+<body class="bg-paper min-h-screen text-ink-900">
+
+  <div class="flex min-h-screen w-full max-w-full">
+    <aside id="sidebar"></aside>
+
+    <div class="flex-1 min-w-0 w-full max-w-full min-h-screen pb-24 md:pb-12">
+      <header id="topbar"></header>
+
+      <main class="px-3.5 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto space-y-6">
+
+        <!-- Page Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-display text-xl sm:text-2xl font-bold text-ink-900">Student Helpdesk & Support</h1>
+              <span id="badge-pending-count" class="px-2.5 py-0.5 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-200">
+                0 Pending
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm text-ink-500 mt-1">Review student questions regarding scholarship applications, payments, or document issues and send coordinator replies.</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="refreshHelpdeskData()" class="px-3.5 py-2 bg-white hover:bg-ink-50 border border-ink-200 text-ink-700 text-xs font-semibold rounded-xl transition shadow-xs flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Refresh</span>
+            </button>
+            <a href="settings.html#tab-organization" class="px-3.5 py-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs flex items-center gap-1.5">
+              <span>⚙️</span>
+              <span>Helpline Channels</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-white rounded-2xl border border-ink-100 p-3.5 sm:p-4 shadow-card">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-ink-400 block">Total Inquiries</span>
+            <span id="metric-total" class="font-display font-bold text-lg sm:text-xl text-ink-900 mt-1 block">0</span>
+            <span class="text-[11px] text-ink-500 mt-0.5 block">All logged student questions</span>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-amber-200/70 p-3.5 sm:p-4 shadow-card bg-gradient-to-br from-white to-amber-50/40">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Awaiting Reply</span>
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            </div>
+            <span id="metric-pending" class="font-display font-bold text-lg sm:text-xl text-amber-700 mt-1 block">0</span>
+            <span class="text-[11px] text-amber-600 mt-0.5 block">Requires coordinator answer</span>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-emerald-200/70 p-3.5 sm:p-4 shadow-card bg-gradient-to-br from-white to-emerald-50/40">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Responded & Handled</span>
+            <span id="metric-responded" class="font-display font-bold text-lg sm:text-xl text-emerald-700 mt-1 block">0</span>
+            <span class="text-[11px] text-emerald-600 mt-0.5 block">Official advice provided</span>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-ink-100 p-3.5 sm:p-4 shadow-card">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-ink-400 block">Resolution Rate</span>
+            <span id="metric-rate" class="font-display font-bold text-lg sm:text-xl text-ink-900 mt-1 block">100%</span>
+            <span class="text-[11px] text-ink-500 mt-0.5 block">Response coverage ratio</span>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="bg-white rounded-2xl border border-ink-100 p-4 shadow-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="setHelpdeskFilter('all')" id="btn-filter-all" class="hd-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-ink-900 text-white transition">
+              All (<span id="count-all">0</span>)
+            </button>
+            <button onclick="setHelpdeskFilter('pending')" id="btn-filter-pending" class="hd-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-ink-100 text-ink-700 hover:bg-ink-200 transition">
+              Awaiting Reply (<span id="count-pending">0</span>)
+            </button>
+            <button onclick="setHelpdeskFilter('responded')" id="btn-filter-responded" class="hd-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-ink-100 text-ink-700 hover:bg-ink-200 transition">
+              Responded (<span id="count-responded">0</span>)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 flex-1 sm:max-w-xs">
+            <div class="relative w-full">
+              <input id="helpdesk-search" oninput="handleHelpdeskSearch()" type="text" placeholder="Search student, mobile, topic..." class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-ink-200 outline-none focus:border-gold-500">
+              <svg class="w-3.5 h-3.5 text-ink-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inquiries List Container -->
+        <div id="inquiries-container" class="space-y-4">
+          <div class="p-8 text-center bg-white rounded-2xl border border-ink-100 shadow-card">
+            <p class="text-xs text-ink-400">Loading student inquiries…</p>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <nav id="bottom-nav"></nav>
+
+  <!-- ================================================================ -->
+  <!-- ADMIN REPLY MODAL -->
+  <!-- ================================================================ -->
+  <div id="reply-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div onclick="closeReplyModal()" class="absolute inset-0 bg-ink-950/70 backdrop-blur-xs"></div>
+    <div class="relative bg-white w-full max-w-lg mx-4 rounded-3xl shadow-2xl p-6 border border-ink-100 z-10 space-y-5 max-h-[90vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-ink-100 pb-3">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-gold-600 font-mono">ScholarLedger Advisory Desk</span>
+          <h3 class="font-display font-bold text-lg text-ink-900 mt-0.5">Reply to Student Inquiry</h3>
+        </div>
+        <button onclick="closeReplyModal()" class="p-1.5 rounded-xl text-ink-400 hover:text-ink-800 hover:bg-ink-100 transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Student & Question Context Box -->
+      <div class="bg-ink-50/70 rounded-2xl border border-ink-200/80 p-4 space-y-2.5 text-xs">
+        <div class="flex items-center justify-between">
+          <div>
+            <span id="reply-student-name" class="font-bold text-ink-900 text-sm block">Student Name</span>
+            <span id="reply-student-info" class="text-ink-500 font-mono text-[11px] block mt-0.5">Mobile: —</span>
+          </div>
+          <span id="reply-category-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-ink-200 text-ink-800">
+            Category
+          </span>
+        </div>
+
+        <div id="reply-scheme-container" class="text-ink-600 bg-white p-2 rounded-xl border border-ink-100 text-[11px] flex items-center gap-1.5">
+          <span>🎓</span>
+          <span id="reply-scheme-name">Scheme Name</span>
+        </div>
+
+        <div class="pt-1">
+          <span class="text-ink-400 block text-[10px] font-bold uppercase">Student's Question:</span>
+          <p id="reply-student-message" class="text-ink-900 font-medium bg-white p-3 rounded-xl border border-ink-100 mt-1 whitespace-pre-line leading-relaxed text-xs">
+            Question text...
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Template Responses -->
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-700 mb-1.5">
+          Quick Response Templates (Click to insert)
+        </label>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="insertQuickTemplate('under_verification')" class="px-2.5 py-1 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-lg text-[11px] font-medium transition">
+            ⏳ Under Institute Verification
+          </button>
+          <button type="button" onclick="insertQuickTemplate('dbt_queued')" class="px-2.5 py-1 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-lg text-[11px] font-medium transition">
+            💳 DBT Batch Queued
+          </button>
+          <button type="button" onclick="insertQuickTemplate('doc_correction')" class="px-2.5 py-1 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-lg text-[11px] font-medium transition">
+            📑 Document Re-upload Needed
+          </button>
+          <button type="button" onclick="insertQuickTemplate('portal_approved')" class="px-2.5 py-1 bg-ink-100 hover:bg-ink-200 text-ink-800 rounded-lg text-[11px] font-medium transition">
+            ✅ Sanction Approved
+          </button>
+        </div>
+      </div>
+
+      <!-- Reply Form -->
+      <form id="reply-form" onsubmit="handleSendReply(event)" class="space-y-4">
+        <input type="hidden" id="reply-message-id" value="">
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-ink-800 mb-1.5">Coordinator Official Reply *</label>
+          <textarea id="reply-content" rows="4" required class="w-full rounded-2xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 font-sans" placeholder="Type your clear advice, resolution instructions, or status update for the student…"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-bold text-ink-700">Mark Status:</label>
+            <select id="reply-status-select" class="rounded-xl border border-ink-200 px-2.5 py-1 text-xs outline-none bg-white font-medium">
+              <option value="Responded">Responded</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="closeReplyModal()" class="px-4 py-2 border border-ink-200 text-ink-600 hover:bg-ink-50 text-xs font-semibold rounded-xl transition">
+              Cancel
+            </button>
+            <button type="submit" id="btn-submit-reply" class="px-5 py-2 bg-gold-500 hover:bg-gold-400 text-ink-950 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+              <span>Send Reply to Student</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/helpdesk.js"></script>
+</body>
+</html>

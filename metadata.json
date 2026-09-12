@@ -1,0 +1,6 @@
+{
+  "name": "Scholarship Ledger",
+  "description": "Scholarship student management system to track students, scholarships, applications, documents, and payments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application · ScholarLedger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="js/admin-auth.js"></script>
+</head>
+<body class="bg-paper min-h-screen">
+
+  <div class="flex min-h-screen w-full max-w-full">
+    <aside id="sidebar"></aside>
+
+    <div class="flex-1 min-w-0 w-full max-w-full min-h-screen pb-24 md:pb-8">
+      <header id="topbar"></header>
+
+      <main class="px-3.5 sm:px-6 md:px-8 py-6 max-w-4xl mx-auto space-y-6">
+
+        <a href="applications.html" class="text-xs font-medium text-ink-400 hover:text-ink-700">← Back to Applications</a>
+
+        <!-- Step 1+2: Student & scholarship selection (create mode only) -->
+        <div id="selection-card" class="bg-white rounded-2xl border border-ink-100 shadow-card p-5 space-y-4 hidden">
+          <h2 class="font-display text-base font-semibold text-ink-900">New scholarship application</h2>
+          <div>
+            <label class="block text-sm font-medium text-ink-700 mb-1.5">Student *</label>
+            <select id="select-student" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+              <option value="">Search / select student…</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-ink-700 mb-1.5">Scholarship *</label>
+            <select id="select-scholarship" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+              <option value="">Select scholarship…</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Header (existing application) -->
+        <div id="app-header" class="hidden bg-white rounded-2xl border border-ink-100 shadow-card p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h1 id="app-title-student" class="font-display text-xl font-semibold text-ink-900"></h1>
+              <p id="app-title-scholarship" class="text-sm text-ink-500 mt-0.5"></p>
+            </div>
+            <button id="delete-app-btn" class="text-xs font-medium border border-red-100 text-red-600 rounded-lg px-3 py-2 hover:bg-red-50 shrink-0">Delete</button>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div id="progress-card" class="hidden bg-white rounded-2xl border border-ink-100 shadow-card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="font-display text-sm font-semibold text-ink-900">Progress</h2>
+            <span id="progress-pct" class="text-xs font-medium text-gold-600">0%</span>
+          </div>
+          <div class="w-full h-2 rounded-full status-progress-track overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gold-500 transition-all duration-500" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Application details form -->
+        <form id="application-form" class="bg-white rounded-2xl border border-ink-100 shadow-card p-5 space-y-4">
+          <h2 class="font-display text-base font-semibold text-ink-900">Application details</h2>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-ink-700 mb-1.5">Application Number</label>
+              <input id="a-number" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="EK123456">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-ink-700 mb-1.5">Registration Number</label>
+              <input id="a-registration" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-ink-700 mb-1.5">Academic Year</label>
+            <input id="a-year" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="2026-27">
+          </div>
+
+          <!-- Credentials -->
+          <div class="border-t border-ink-100 pt-4">
+            <p class="text-sm font-medium text-ink-700 mb-3">Application credentials</p>
+            <div class="grid grid-cols-1 gap-3">
+              <div>
+                <label class="block text-xs text-ink-500 mb-1.5">Login / Application ID</label>
+                <input id="a-login" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+              </div>
+              <div>
+                <label class="block text-xs text-ink-500 mb-1.5">Password</label>
+                <div class="flex gap-2">
+                  <input id="a-password" type="password" class="flex-1 rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+                  <button type="button" id="toggle-password" class="text-xs font-medium border border-ink-100 rounded-lg px-3 py-2 text-ink-700 hover:border-gold-400">Show</button>
+                  <button type="button" id="copy-password" class="text-xs font-medium border border-ink-100 rounded-lg px-3 py-2 text-ink-700 hover:border-gold-400">Copy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="border-t border-ink-100 pt-4 grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-ink-500 mb-1.5">Application Date</label>
+              <input type="date" id="a-application-date" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+            </div>
+            <div>
+              <label class="block text-xs text-ink-500 mb-1.5">Submission Date</label>
+              <input type="date" id="a-submission-date" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+            </div>
+            <div>
+              <label class="block text-xs text-ink-500 mb-1.5">Verification Date</label>
+              <input type="date" id="a-verification-date" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+            </div>
+            <div>
+              <label class="block text-xs text-ink-500 mb-1.5">Approval Date</label>
+              <input type="date" id="a-approval-date" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+            </div>
+          </div>
+
+          <!-- Status + amount -->
+          <div class="border-t border-ink-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-ink-700 mb-1.5">Status *</label>
+              <select id="a-status" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 font-semibold text-ink-900"></select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-ink-700 mb-1.5">Scholarship Grant Amount (₹) *</label>
+              <input type="number" id="a-expected" oninput="calculateCommissionSplit()" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 font-bold text-ink-900" placeholder="25000">
+            </div>
+          </div>
+
+          <!-- Quick Approval / Commission Workflow Banner -->
+          <div id="approval-workflow-banner" class="rounded-xl border p-4 transition-all">
+            <!-- Populated dynamically: Shows "Approve & Send to Commission" or "Enrolled in Commission System" -->
+          </div>
+
+          <!-- Commission & Student Fee Breakdown (Merged Financials) -->
+          <div class="bg-ink-50/70 rounded-xl border border-ink-200 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-ink-700 flex items-center gap-1.5">
+                <span>💰 Commission & Student Fee Calculation</span>
+              </span>
+              <a href="commissions.html" id="link-to-commissions" class="text-xs font-semibold text-gold-600 hover:text-gold-700 underline flex items-center gap-1">
+                <span>View Full Ledger</span> →
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-ink-600 mb-1">Center Fee Rate (%)</label>
+                <input type="number" id="a-comm-rate" value="10" min="0" max="100" step="0.5" oninput="calculateCommissionSplit()" class="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-xs font-bold text-ink-900 outline-none focus:border-gold-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-ink-600 mb-1">Center Fee / Commission (₹)</label>
+                <input type="number" id="a-comm-amount" readonly class="w-full rounded-lg border border-ink-200 bg-ink-100/70 px-3 py-2 text-xs font-bold text-ink-900 outline-none">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-emerald-700 mb-1">Net Student Disbursal (₹)</label>
+                <input type="number" id="a-student-amount" readonly class="w-full rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2 text-xs font-bold text-emerald-900 outline-none">
+              </div>
+            </div>
+            <p class="text-[11px] text-ink-500">
+              When approved, this application automatically links to the Commission & Student Fees Ledger.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-ink-700 mb-1.5">Notes</label>
+            <textarea id="a-notes" rows="2" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"></textarea>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <a href="applications.html" class="flex-1 text-center border border-ink-100 text-ink-700 text-sm font-medium rounded-lg py-2.5">Cancel</a>
+            <button type="submit" id="app-save-btn" class="flex-1 bg-ink-800 hover:bg-ink-900 text-white text-sm font-medium rounded-lg py-2.5">Save Application</button>
+          </div>
+        </form>
+
+        <!-- Payments (existing application only) -->
+        <div id="payments-section" class="hidden bg-white rounded-2xl border border-ink-100 shadow-card p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-display text-base font-semibold text-ink-900">Payments</h2>
+            <button id="add-payment-btn" class="text-xs font-medium bg-ink-800 hover:bg-ink-900 text-white rounded-lg px-3 py-2">+ Add Payment</button>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div><p class="text-xs text-ink-400">Expected</p><p id="pay-expected" class="font-display text-sm font-semibold text-ink-900 mt-0.5">—</p></div>
+            <div><p class="text-xs text-ink-400">Received</p><p id="pay-received" class="font-display text-sm font-semibold text-emerald-600 mt-0.5">—</p></div>
+            <div><p class="text-xs text-ink-400">Pending</p><p id="pay-pending" class="font-display text-sm font-semibold text-gold-600 mt-0.5">—</p></div>
+          </div>
+          <div id="payments-list" class="space-y-2"></div>
+        </div>
+
+        <!-- Documents (existing application only) -->
+        <div id="documents-section" class="hidden bg-white rounded-2xl border border-ink-100 shadow-card p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-display text-base font-semibold text-ink-900">Documents</h2>
+            <button id="add-document-btn" class="text-xs font-medium bg-ink-800 hover:bg-ink-900 text-white rounded-lg px-3 py-2">+ Add Document</button>
+          </div>
+          <div id="documents-list" class="space-y-2"></div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <nav id="bottom-nav"></nav>
+
+  <!-- Add payment modal -->
+  <div id="payment-modal" class="modal-root hidden fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-900/50"></div>
+    <div data-sheet class="relative bg-white w-full md:max-w-sm md:rounded-2xl rounded-t-2xl translate-y-full md:translate-y-0 md:opacity-0 md:scale-95 opacity-100 scale-100">
+      <div class="sticky top-0 bg-white border-b border-ink-100 px-5 py-4 flex items-center justify-between">
+        <h3 class="font-display text-base font-semibold text-ink-900">Add Payment</h3>
+        <button data-close-modal="payment-modal" class="text-ink-400 hover:text-ink-700">✕</button>
+      </div>
+      <form id="payment-form" class="p-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">Amount *</label>
+          <input required type="number" id="p-amount" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="10000">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">Payment Date</label>
+          <input type="date" id="p-date" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">Transaction ID</label>
+          <input id="p-transaction" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-ink-700 mb-1.5">Method</label>
+            <input id="p-method" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="Bank transfer">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-ink-700 mb-1.5">Status</label>
+            <select id="p-status" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"></select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">Notes</label>
+          <textarea id="p-notes" rows="2" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"></textarea>
+        </div>
+        <div class="flex gap-3 pt-1 pb-1">
+          <button type="button" data-close-modal="payment-modal" class="flex-1 border border-ink-100 text-ink-700 text-sm font-medium rounded-lg py-2.5">Cancel</button>
+          <button type="submit" id="payment-save-btn" class="flex-1 bg-ink-800 hover:bg-ink-900 text-white text-sm font-medium rounded-lg py-2.5">Save Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add document modal -->
+  <div id="document-modal" class="modal-root hidden fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-900/50"></div>
+    <div data-sheet class="relative bg-white w-full md:max-w-sm md:rounded-2xl rounded-t-2xl translate-y-full md:translate-y-0 md:opacity-0 md:scale-95 opacity-100 scale-100">
+      <div class="sticky top-0 bg-white border-b border-ink-100 px-5 py-4 flex items-center justify-between">
+        <h3 class="font-display text-base font-semibold text-ink-900">Add Document</h3>
+        <button data-close-modal="document-modal" class="text-ink-400 hover:text-ink-700">✕</button>
+      </div>
+      <form id="document-form" class="p-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">Document Type</label>
+          <select id="d-type" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"></select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">Status</label>
+          <select id="d-status" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"></select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">File</label>
+          <input type="file" id="d-file" class="w-full text-sm text-ink-600">
+          <p class="text-xs text-ink-400 mt-1">Stored privately in Supabase Storage.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-1.5">Document Number</label>
+          <input id="d-number" class="w-full rounded-lg border border-ink-100 px-3.5 py-2.5 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+        </div>
+        <div class="flex gap-3 pt-1 pb-1">
+          <button type="button" data-close-modal="document-modal" class="flex-1 border border-ink-100 text-ink-700 text-sm font-medium rounded-lg py-2.5">Cancel</button>
+          <button type="submit" id="document-save-btn" class="flex-1 bg-ink-800 hover:bg-ink-900 text-white text-sm font-medium rounded-lg py-2.5">Save Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm delete modal -->
+  <div id="confirm-modal" class="modal-root hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-900/50"></div>
+    <div data-sheet class="relative bg-white w-full max-w-sm mx-4 rounded-2xl opacity-0 scale-95 p-5">
+      <h3 id="confirm-title" class="font-display text-base font-semibold text-ink-900 mb-1">Delete?</h3>
+      <p id="confirm-message" class="text-sm text-ink-400 mb-5"></p>
+      <div class="flex gap-3">
+        <button id="confirm-no" class="flex-1 border border-ink-100 text-ink-700 text-sm font-medium rounded-lg py-2.5">Cancel</button>
+        <button id="confirm-yes" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg py-2.5">Delete</button>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/application-detail.js"></script>
+</body>
+</html>

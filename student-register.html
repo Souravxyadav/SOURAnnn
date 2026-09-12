@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration · ScholarLedger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+</head>
+<body class="bg-paper min-h-screen text-ink-900 font-body py-8 px-4">
+
+  <div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="text-center space-y-2">
+      <div class="w-14 h-14 rounded-2xl seal mx-auto shadow-md"></div>
+      <h1 class="font-display text-2xl sm:text-3xl font-bold text-ink-900">Scholar<span class="text-gold-600">Ledger</span></h1>
+      <p class="text-xs sm:text-sm text-ink-500 font-medium">Student Registration & Scholarship Eligibility Profiling</p>
+    </div>
+
+    <!-- Registration Form Card -->
+    <div class="bg-white rounded-3xl border border-ink-100 shadow-card p-6 sm:p-8 space-y-6">
+      <div>
+        <h2 class="font-display font-bold text-base text-ink-900">Applicant Details</h2>
+        <p class="text-xs text-ink-500 mt-0.5">Please provide accurate academic, social, and financial records for correct scheme matching.</p>
+      </div>
+
+      <form id="student-reg-form" onsubmit="handleStudentRegistration(event)" class="space-y-5">
+
+        <!-- Personal Info -->
+        <div class="space-y-4">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-gold-700 block font-mono">1. Personal & Contact Information</span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Full Name (As per Aadhaar/10th) *</label>
+              <input required id="reg-name" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="e.g. Rahul Sharma">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Mobile Number *</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-2.5 text-xs text-ink-400 font-mono font-medium">+91</span>
+                <input required type="tel" id="reg-mobile" pattern="[0-9]{10}" maxlength="10"
+                  class="w-full rounded-xl border border-ink-200 pl-11 pr-3.5 py-2.5 text-xs font-mono outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"
+                  placeholder="9876543210">
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Date of Birth *</label>
+              <input required type="date" id="reg-dob" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Gender *</label>
+              <select required id="reg-gender" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 bg-white">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Email Address</label>
+              <input type="email" id="reg-email" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="rahul@example.com">
+            </div>
+          </div>
+        </div>
+
+        <!-- Social & Eligibility Criteria -->
+        <div class="space-y-4 pt-3 border-t border-ink-100">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-gold-700 block font-mono">2. Social & Eligibility Category</span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Social Category *</label>
+              <select required id="reg-category" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 bg-white">
+                <option value="General">General</option>
+                <option value="OBC">OBC</option>
+                <option value="SC">SC</option>
+                <option value="ST">ST</option>
+                <option value="EBC">EBC</option>
+                <option value="Minority">Minority</option>
+                <option value="EWS">EWS</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Annual Family Income (₹) *</label>
+              <input required type="number" id="reg-income" step="1000" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs font-medium outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="e.g. 120000">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Academic Score % *</label>
+              <input required type="number" id="reg-percentage" step="0.1" min="0" max="100" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs font-bold outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500" placeholder="e.g. 78.5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="space-y-4 pt-3 border-t border-ink-100">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-gold-700 block font-mono">3. Academic Enrollment</span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Current Course / Class *</label>
+              <select required id="reg-course" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 bg-white">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Year / Semester</label>
+              <input id="reg-semester" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. 1st Year / Sem 2">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Institution / College / School Name</label>
+            <input id="reg-college" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. Government Degree College">
+          </div>
+        </div>
+
+        <!-- Banking & Aadhaar -->
+        <div class="space-y-4 pt-3 border-t border-ink-100">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-gold-700 block font-mono">4. Aadhaar & Bank Seeding</span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Aadhaar Card Last 4 Digits</label>
+              <input maxlength="4" pattern="[0-9]{4}" id="reg-aadhaar" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs font-mono outline-none focus:border-gold-500" placeholder="e.g. 5432">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-ink-700 mb-1.5">Bank NPCI / DBT Seeding Status</label>
+              <select id="reg-npci" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500 bg-white">
+                <option value="Seeded / Active">Seeded / Active (Ready for DBT)</option>
+                <option value="Not Seeded">Not Seeded (Need Bank Mapping)</option>
+                <option value="Unknown">Not Sure / Check Required</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <p id="reg-error" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3"></p>
+
+        <button type="submit" id="reg-submit-btn" class="w-full bg-ink-900 hover:bg-ink-800 text-white font-bold text-xs rounded-xl py-3.5 transition shadow-xs">
+          Submit Registration & Open Student Portal →
+        </button>
+
+        <div class="text-center pt-2">
+          <p class="text-xs text-ink-500">
+            Already registered? <a href="student-login.html" class="text-gold-600 font-bold hover:underline">Log in with Mobile & DOB</a>
+          </p>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/toast.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const courseSelect = document.getElementById("reg-course");
+    if (courseSelect && typeof getCourseOptionsHtml === "function") {
+      courseSelect.innerHTML = getCourseOptionsHtml("B.A. (Bachelor of Arts)", "-- Choose Course / Academic Level --");
+    } else if (courseSelect) {
+      courseSelect.innerHTML = `
+        <option value="B.A. (Bachelor of Arts)">B.A. (Bachelor of Arts)</option>
+        <option value="B.Sc. (Bachelor of Science)">B.Sc. (Bachelor of Science)</option>
+        <option value="B.Com. (Bachelor of Commerce)">B.Com. (Bachelor of Commerce)</option>
+        <option value="B.Tech / B.E. (Engineering)">B.Tech / B.E. (Engineering)</option>
+        <option value="Class 11 (Intermediate 1st Year)">Class 11 (Intermediate 1st Year)</option>
+        <option value="Class 12 (Intermediate 2nd Year)">Class 12 (Intermediate 2nd Year)</option>
+        <option value="Polytechnic / Diploma">Polytechnic / Diploma</option>
+      `;
+    }
+  });
+
+  async function handleStudentRegistration(e) {
+    e.preventDefault();
+    const errorBox = document.getElementById("reg-error");
+    const btn = document.getElementById("reg-submit-btn");
+
+    errorBox.classList.add("hidden");
+    btn.disabled = true;
+    btn.textContent = "Creating Student Profile...";
+
+    try {
+      const name = document.getElementById("reg-name").value.trim();
+      const mobile = document.getElementById("reg-mobile").value.trim();
+      const dob = document.getElementById("reg-dob").value;
+      const gender = document.getElementById("reg-gender").value;
+      const email = document.getElementById("reg-email").value.trim() || null;
+      const category = document.getElementById("reg-category").value;
+      const income = parseFloat(document.getElementById("reg-income").value) || 0;
+      const percentage = parseFloat(document.getElementById("reg-percentage").value) || 0;
+      const course = document.getElementById("reg-course").value;
+      const semester = document.getElementById("reg-semester").value.trim() || null;
+      const college = document.getElementById("reg-college").value.trim() || null;
+      const aadhaarLast4 = document.getElementById("reg-aadhaar").value.trim() || null;
+      const npciStatus = document.getElementById("reg-npci").value;
+
+      // Generate custom student code (e.g. STU-2025-XXXX)
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const studentCode = `STU-${new Date().getFullYear()}-${randomSuffix}`;
+
+      const payload = {
+        code: studentCode,
+        student_code: studentCode,
+        name,
+        mobile,
+        dob,
+        gender,
+        email,
+        category,
+        annual_income: income,
+        percentage,
+        course,
+        semester,
+        college,
+        aadhaar_last_four: aadhaarLast4,
+        npci_status: npciStatus,
+        status: "Active",
+        created_at: new Date().toISOString()
+      };
+
+      const sb = window.supabaseClient;
+      const { data, error } = await sb.from("students").insert(payload).select().single();
+
+      if (error) throw error;
+
+      toast("✓ Registration successful! Accessing portal...", "success");
+
+      const createdId = data?.id || payload.id;
+      localStorage.setItem("student_session_token", createdId);
+
+      setTimeout(() => {
+        window.location.href = "student-portal.html";
+      }, 700);
+    } catch (err) {
+      console.error("Registration error:", err);
+      errorBox.textContent = err.message || "Failed to complete registration. Please try again.";
+      errorBox.classList.remove("hidden");
+      btn.disabled = false;
+      btn.textContent = "Submit Registration & Open Student Portal →";
+    }
+  }
+</script>
+</body>
+</html>

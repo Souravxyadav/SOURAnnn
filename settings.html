@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings Console · ScholarLedger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind-init.js"></script>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="js/admin-auth.js"></script>
+</head>
+<body class="bg-paper min-h-screen font-body text-ink-900 selection:bg-gold-200 selection:text-ink-900">
+  <div class="flex min-h-screen w-full max-w-full">
+    <aside id="sidebar"></aside>
+    
+    <div class="flex-1 min-w-0 w-full max-w-full min-h-screen pb-24 md:pb-8 flex flex-col">
+      <header id="topbar"></header>
+      
+      <main class="px-3.5 sm:px-6 md:px-8 py-6 max-w-7xl w-full mx-auto space-y-6 animate-fade-in-up">
+        
+        <!-- Header Title Banner -->
+        <div class="bg-gradient-to-r from-ink-900 via-ink-800 to-ink-900 text-white p-6 rounded-2xl border border-ink-700 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold-500/20 text-gold-400 border border-gold-500/30">System Console</span>
+              <h1 class="font-display text-lg md:text-xl font-bold text-white">System Settings & Controls</h1>
+            </div>
+            <p class="text-xs text-ink-300 max-w-2xl leading-relaxed">
+              All system configurations organized section-by-section in a continuous vertical scrollable view. Jump to any section or save all settings in one click.
+            </p>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <button onclick="saveAllGeneralSettings()" id="save-all-settings-btn" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-ink-950 text-xs font-bold rounded-xl transition shadow-md active:scale-95">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Save All Changes</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sticky Quick Navigation Bar for Mobile & Desktop -->
+        <div class="bg-white rounded-2xl border border-ink-100 p-2.5 shadow-sm sticky top-16 z-20 flex items-center justify-between gap-2 overflow-x-auto table-scroll max-w-full">
+          <div class="flex items-center gap-1.5 shrink-0" id="quick-nav-pills">
+            <button onclick="scrollToSettingsSection('general')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-ink-900 text-white transition flex items-center gap-1 shrink-0" data-target="general">
+              <span>🏢</span><span>Organization</span>
+            </button>
+            <button onclick="scrollToSettingsSection('academic')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="academic">
+              <span>📚</span><span>Academic</span>
+            </button>
+            <button onclick="scrollToSettingsSection('financial')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="financial">
+              <span>💰</span><span>Financial</span>
+            </button>
+            <button onclick="scrollToSettingsSection('workflows')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="workflows">
+              <span>⚙️</span><span>Workflows</span>
+            </button>
+            <button onclick="scrollToSettingsSection('portal')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="portal">
+              <span>🎓</span><span>Student Portal</span>
+            </button>
+            <button onclick="scrollToSettingsSection('ai')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="ai">
+              <span>⚡</span><span>AI Assistant</span>
+            </button>
+            <button onclick="scrollToSettingsSection('database')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="database">
+              <span>🗄️</span><span>Database</span>
+            </button>
+            <button onclick="scrollToSettingsSection('data')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="data">
+              <span>📦</span><span>Data & Backup</span>
+            </button>
+            <button onclick="scrollToSettingsSection('security')" class="nav-pill-btn px-3 py-1.5 rounded-xl text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center gap-1 shrink-0" data-target="security">
+              <span>🛡️</span><span>Security</span>
+            </button>
+          </div>
+
+          <div class="hidden lg:flex items-center gap-2 shrink-0 border-l border-ink-100 pl-3">
+            <button onclick="saveAllGeneralSettings()" class="px-3.5 py-1.5 bg-gold-500 hover:bg-gold-400 text-ink-950 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span>Save</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Vertical Scrollable 2-Column Grid: Sticky Table of Contents + Continuous Vertical Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+          
+          <!-- Left: Sticky Quick Jump Sidebar (Desktop) -->
+          <div class="hidden lg:block lg:col-span-1 bg-white rounded-2xl border border-ink-100 p-3 shadow-sm sticky top-32 space-y-1">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-ink-400 px-3 py-1.5">Settings Sections</p>
+            
+            <button onclick="scrollToSettingsSection('general')" id="sidebar-nav-general" class="sidebar-toc-btn active w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-left transition bg-ink-900 text-white shadow-xs">
+              <span class="text-sm">🏢</span>
+              <span class="truncate">1. Organization & Contact</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('academic')" id="sidebar-nav-academic" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">📚</span>
+              <span class="truncate">2. Academic Sessions & Castes</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('financial')" id="sidebar-nav-financial" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">💰</span>
+              <span class="truncate">3. Financial & Commissions</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('workflows')" id="sidebar-nav-workflows" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">⚙️</span>
+              <span class="truncate">4. Statuses & Workflows</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('portal')" id="sidebar-nav-portal" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">🎓</span>
+              <span class="truncate">5. Student Portal Access</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('ai')" id="sidebar-nav-ai" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">⚡</span>
+              <span class="truncate">6. AI Assistant Engine</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('database')" id="sidebar-nav-database" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">🗄️</span>
+              <span class="truncate">7. Database & InfinityFree</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('data')" id="sidebar-nav-data" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">📦</span>
+              <span class="truncate">8. Data Import & Backup</span>
+            </button>
+
+            <button onclick="scrollToSettingsSection('security')" id="sidebar-nav-security" class="sidebar-toc-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition text-ink-600 hover:bg-ink-50">
+              <span class="text-sm">🛡️</span>
+              <span class="truncate">9. Security & Admin Info</span>
+            </button>
+          </div>
+
+          <!-- Right: All Sections Present Vertically (Fully Scrollable) -->
+          <div class="lg:col-span-3 space-y-8 w-full">
+            
+            <!-- SECTION 1: ORGANIZATION & CONTACT -->
+            <section id="section-general" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-ink-900 text-gold-400 font-bold text-sm flex items-center justify-center shadow-xs">🏢</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">1. Organization Information & Student Helpdesk</h2>
+                      <p class="text-xs text-ink-500">Contact details shown in the Student Portal for WhatsApp and phone support.</p>
+                    </div>
+                  </div>
+                  <button onclick="saveAllGeneralSettings()" class="px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                    Save Section
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">Institution / Center Name</label>
+                    <input type="text" id="setting-center-name" class="w-full h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500 transition" placeholder="e.g. ScholarLedger Advisory Center">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">Support WhatsApp Number *</label>
+                    <input type="text" id="setting-support-whatsapp" class="w-full h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500 transition" placeholder="e.g. 919876543210 (Country code included)">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">Helpdesk Phone</label>
+                    <input type="text" id="setting-support-phone" class="w-full h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500 transition" placeholder="e.g. +91 9876543210">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">Coordinator Email</label>
+                    <input type="email" id="setting-support-email" class="w-full h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500 transition" placeholder="admin@scholarledger.com">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">Active Academic Session</label>
+                    <select id="setting-default-session" class="w-full h-10 px-3 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500 transition">
+                      <option value="2024-2025">2024-2025</option>
+                      <option value="2025-2026" selected>2025-2026</option>
+                      <option value="2026-2027">2026-2027</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">Display Currency</label>
+                    <select id="setting-currency" class="w-full h-10 px-3 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500 transition">
+                      <option value="INR" selected>Indian Rupee (₹ - INR)</option>
+                      <option value="USD">US Dollar ($ - USD)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 2: ACADEMIC SESSIONS & CATEGORIES -->
+            <section id="section-academic" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-amber-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">📚</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">2. Academic Sessions & Student Categories</h2>
+                      <p class="text-xs text-ink-500">Configure academic years and caste choices for student registration.</p>
+                    </div>
+                  </div>
+                  <button onclick="saveAllGeneralSettings()" class="px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                    Save Section
+                  </button>
+                </div>
+
+                <!-- Academic Years Master -->
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-ink-900 uppercase tracking-wide">Academic Sessions (Years)</h4>
+                  <div id="academic-years-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                    <!-- Dynamically populated -->
+                  </div>
+
+                  <div class="flex gap-2 pt-1">
+                    <input type="text" id="new-academic-year-input" placeholder="e.g. 2027-2028" class="flex-1 h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500">
+                    <button type="button" id="add-academic-year-btn" class="px-4 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shrink-0">
+                      + Add Session
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Student Categories Master -->
+                <div class="space-y-3 pt-3 border-t border-ink-100">
+                  <h4 class="text-xs font-bold text-ink-900 uppercase tracking-wide">Student Categories & Castes</h4>
+                  <div id="categories-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                    <!-- Dynamically populated -->
+                  </div>
+
+                  <div class="flex gap-2 pt-1">
+                    <input type="text" id="new-category-input" placeholder="e.g. EWS, Minority, SBC" class="flex-1 h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500">
+                    <button type="button" id="add-category-btn" class="px-4 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shrink-0">
+                      + Add Category
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- SECTION 3: FINANCIAL & COMMISSION -->
+            <section id="section-financial" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">💰</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">3. Financial Rules & Commission Policies</h2>
+                      <p class="text-xs text-ink-500">Default commission percentages, service charges, and disbursal calculation rules.</p>
+                    </div>
+                  </div>
+                  <button onclick="saveAllGeneralSettings()" class="px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                    Save Section
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div class="bg-ink-50/70 p-4 rounded-xl border border-ink-100 space-y-2">
+                    <label class="block text-xs font-bold text-ink-900 uppercase tracking-wide">Default Commission Rate (%)</label>
+                    <input type="number" id="setting-commission-rate" step="0.1" min="0" max="100" class="w-full h-10 px-3.5 bg-white border border-ink-200 rounded-xl text-xs text-ink-900 font-bold focus:outline-none focus:border-gold-500" value="10">
+                    <p class="text-[11px] text-ink-500">Auto-filled when drafting new scholarships or approving applications.</p>
+                  </div>
+
+                  <div class="bg-ink-50/70 p-4 rounded-xl border border-ink-100 space-y-2">
+                    <label class="block text-xs font-bold text-ink-900 uppercase tracking-wide">Commission Calculation Mode</label>
+                    <select id="setting-commission-mode" class="w-full h-10 px-3 bg-white border border-ink-200 rounded-xl text-xs text-ink-900 font-semibold focus:outline-none focus:border-gold-500">
+                      <option value="received">Calculated on Received Amount (Recommended)</option>
+                      <option value="expected">Calculated on Total Expected Grant</option>
+                      <option value="flat">Flat Fixed Fee per Application</option>
+                    </select>
+                    <p class="text-[11px] text-ink-500">Determines how center advisory fee is settled from the student grant.</p>
+                  </div>
+                </div>
+
+                <div class="p-4 bg-gold-50/60 rounded-xl border border-gold-200/60 flex items-start gap-3">
+                  <span class="text-lg">💡</span>
+                  <div>
+                    <h4 class="text-xs font-bold text-gold-900">Unified Commissions & Student Fees Ledger</h4>
+                    <p class="text-xs text-gold-800/80 mt-0.5 leading-relaxed">
+                      Every application approved by admin automatically flows into the Commission & Fee Ledger. You can track total award value, student net received payout, center commission collected, and pending fee balance in one place.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 4: WORKFLOWS & STATUSES -->
+            <section id="section-workflows" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-ink-900 text-gold-400 font-bold text-sm flex items-center justify-center shadow-xs">⚙️</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">4. Application Statuses & Lifecycle Workflows</h2>
+                      <p class="text-xs text-ink-500">Master list of application stages used across all tracking tables.</p>
+                    </div>
+                  </div>
+                  <button onclick="saveAllGeneralSettings()" class="px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                    Save Section
+                  </button>
+                </div>
+
+                <div id="status-list" class="space-y-2">
+                  <!-- Dynamically populated -->
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                  <input type="text" id="new-status-input" placeholder="e.g. Needs Documents Re-upload" class="flex-1 h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500">
+                  <button id="add-status-btn" class="px-4 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shrink-0">
+                    + Add Status
+                  </button>
+                </div>
+
+                <!-- Scholarship Specific Workflow -->
+                <div class="pt-4 border-t border-ink-100 space-y-3">
+                  <h4 class="font-display font-semibold text-xs text-ink-900 uppercase tracking-wide">Scholarship-Specific Stage Customization</h4>
+                  <select id="workflow-scholarship-select" class="w-full h-10 px-3 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500">
+                    <option value="">-- Select Scholarship to Configure Stages --</option>
+                  </select>
+
+                  <div id="workflow-container" class="hidden space-y-3 pt-2">
+                    <div id="workflow-status-list" class="space-y-2"></div>
+                    <button id="save-workflow-btn" class="px-4 py-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition">
+                      Save Scheme Workflow
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- SECTION 5: STUDENT PORTAL & ACCESS -->
+            <section id="section-portal" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">🎓</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">5. Student Portal Access & Security Policies</h2>
+                      <p class="text-xs text-ink-500">Controls for student login credentials and live progress tracking policies.</p>
+                    </div>
+                  </div>
+                  <button onclick="saveAllGeneralSettings()" class="px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                    Save Section
+                  </button>
+                </div>
+
+                <div class="space-y-4">
+                  <label class="flex items-start gap-3 p-3.5 bg-ink-50 rounded-xl border border-ink-100 cursor-pointer hover:bg-ink-100/50 transition">
+                    <input type="checkbox" id="policy-student-login" class="w-4 h-4 text-gold-500 rounded border-ink-300 mt-0.5" checked>
+                    <div>
+                      <p class="text-xs font-bold text-ink-900">Enable Student Portal Login</p>
+                      <p class="text-[11px] text-ink-500">Allow students to log into their portal securely using Mobile number + Date of Birth.</p>
+                    </div>
+                  </label>
+
+                  <label class="flex items-start gap-3 p-3.5 bg-ink-50 rounded-xl border border-ink-100 cursor-pointer hover:bg-ink-100/50 transition">
+                    <input type="checkbox" id="policy-student-live-tracking" class="w-4 h-4 text-gold-500 rounded border-ink-300 mt-0.5" checked>
+                    <div>
+                      <p class="text-xs font-bold text-ink-900">Show Live Scholarship Progress & Payment Disbursements</p>
+                      <p class="text-[11px] text-ink-500">Display applied scholarship lifecycle progress steps, verification timeline, and recorded fee payments.</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 6: AI ASSISTANT -->
+            <section id="section-ai" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-purple-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">⚡</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">6. AI Intelligence & Assistant Engine</h2>
+                      <p class="text-xs text-ink-500">Configure AI copilot on dashboard and scholarship forms.</p>
+                    </div>
+                  </div>
+                  <button onclick="saveAllGeneralSettings()" class="px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                    Save Section
+                  </button>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="p-4 bg-ink-50 rounded-xl border border-ink-100 flex items-center justify-between">
+                    <div>
+                      <p class="text-xs font-bold text-ink-900">Enable AI Scholarship Copilot</p>
+                      <p class="text-[11px] text-ink-500 mt-0.5">Assists admins in drafting scholarship criteria and analyzing student eligibility.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="toggle-ai-features" class="sr-only peer" checked>
+                      <div class="w-11 h-6 bg-ink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-500"></div>
+                    </label>
+                  </div>
+
+                  <div class="p-4 bg-ink-50 rounded-xl border border-ink-100 flex items-center justify-between">
+                    <div>
+                      <p class="text-xs font-bold text-ink-900">Auto-Suggest Matching Schemes</p>
+                      <p class="text-[11px] text-ink-500 mt-0.5">Recommends applicable state/central scholarships based on student caste, course, and income.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="toggle-ai-matching" class="sr-only peer" checked>
+                      <div class="w-11 h-6 bg-ink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-500"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 7: DATABASE SQL & INFINITYFREE HOSTING -->
+            <section id="section-database" class="settings-section scroll-mt-36 space-y-4">
+              
+              <!-- Top Banner & Action Controls -->
+              <div class="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white rounded-2xl p-6 border border-ink-700 shadow-xl relative overflow-hidden">
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="space-y-1">
+                    <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-gold-400/20 text-gold-300 text-[10px] font-bold uppercase tracking-wider">
+                      <span>⚡ Database Schema & InfinityFree Guide</span>
+                    </div>
+                    <h2 class="font-display text-lg md:text-xl font-bold text-white">7. Database SQL & InfinityFree Hosting</h2>
+                    <p class="text-xs text-ink-300 max-w-xl">
+                      Complete PostgreSQL schema for Supabase, 1-click SQL copy/download, live table diagnostics, and step-by-step InfinityFree web hosting instructions.
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <button onclick="copyFullSql()" class="px-4 py-2 bg-gold-500 hover:bg-gold-400 text-ink-950 font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5 active:scale-95">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                      <span>Copy Full SQL</span>
+                    </button>
+                    <button onclick="downloadSqlFile()" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition flex items-center gap-1.5">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                      <span>Download .SQL</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Database Sub-Tabs: InfinityFree Guide vs Complete SQL Schema vs Live Health Diagnostics -->
+              <div class="bg-white rounded-2xl border border-ink-100 p-2 shadow-sm flex items-center gap-2 overflow-x-auto table-scroll max-w-full">
+                <button onclick="switchDbSubTab('guide')" id="dbtab-btn-guide" class="dbtab-btn px-4 py-2 text-xs font-bold rounded-xl bg-ink-900 text-white transition flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                  <span>🚀 InfinityFree Hosting Guide</span>
+                </button>
+                <button onclick="switchDbSubTab('sql')" id="dbtab-btn-sql" class="dbtab-btn px-4 py-2 text-xs font-semibold rounded-xl text-ink-600 hover:bg-ink-50 transition flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                  <span>📜 Full SQL Schema (8 Tables)</span>
+                </button>
+                <button onclick="switchDbSubTab('health')" id="dbtab-btn-health" class="dbtab-btn px-4 py-2 text-xs font-semibold rounded-xl text-ink-600 hover:bg-ink-50 transition flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                  <span>🩺 Live Table Diagnostics</span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                </button>
+              </div>
+
+              <!-- SUBTAB 1: INFINITYFREE HOSTING GUIDE -->
+              <div id="dbtab-pane-guide" class="dbtab-pane space-y-5">
+                <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-6">
+                  <div class="border-b border-ink-100 pb-3 flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <h4 class="font-display font-bold text-base text-ink-900">How to Host ScholarLedger on InfinityFree</h4>
+                      <p class="text-xs text-ink-500">Step-by-step checklist to deploy HTML, CSS, JavaScript files and connect to Supabase.</p>
+                    </div>
+                    <span class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl">Free Web Hosting</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Step 1 -->
+                    <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 space-y-2">
+                      <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-ink-900 text-gold-400 font-bold text-xs flex items-center justify-center">1</span>
+                        <h5 class="text-xs font-bold text-ink-900">Create Account & Domain on InfinityFree</h5>
+                      </div>
+                      <p class="text-xs text-ink-600 leading-relaxed pl-8">
+                        Sign up at <a href="https://www.infinityfree.com" target="_blank" class="text-gold-600 font-bold underline">InfinityFree.com</a>. Create a new Free Hosting account and choose a free subdomain (e.g. <code class="bg-white px-1.5 py-0.5 rounded border border-ink-200 font-mono text-[11px]">myportal.infinityfreeapp.com</code>) or custom domain.
+                      </p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 space-y-2">
+                      <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-ink-900 text-gold-400 font-bold text-xs flex items-center justify-center">2</span>
+                        <h5 class="text-xs font-bold text-ink-900">Open Control Panel & File Manager</h5>
+                      </div>
+                      <p class="text-xs text-ink-600 leading-relaxed pl-8">
+                        In your InfinityFree client area, open the <strong>Control Panel (cPanel)</strong> and click on <strong>Online File Manager</strong> (or connect with <strong>FileZilla FTP</strong> using your FTP credentials).
+                      </p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 space-y-2">
+                      <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-ink-900 text-gold-400 font-bold text-xs flex items-center justify-center">3</span>
+                        <h5 class="text-xs font-bold text-ink-900">Upload Project Files to <code class="font-mono text-ink-900">htdocs/</code></h5>
+                      </div>
+                      <p class="text-xs text-ink-600 leading-relaxed pl-8">
+                        Navigate inside the <strong class="text-ink-900">htdocs/</strong> folder. Delete any default placeholder files (e.g. <code class="text-[11px] font-mono">index2.html</code>). Upload all ScholarLedger files & folders: <code class="text-[11px] font-mono">index.html</code>, <code class="text-[11px] font-mono">commissions.html</code>, <code class="text-[11px] font-mono">applications.html</code>, <code class="text-[11px] font-mono">student-portal.html</code>, <code class="text-[11px] font-mono">js/</code>, <code class="text-[11px] font-mono">css/</code>, and <code class="text-[11px] font-mono">.htaccess</code>.
+                      </p>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 space-y-2">
+                      <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-ink-900 text-gold-400 font-bold text-xs flex items-center justify-center">4</span>
+                        <h5 class="text-xs font-bold text-ink-900">Configure Supabase API Keys</h5>
+                      </div>
+                      <p class="text-xs text-ink-600 leading-relaxed pl-8">
+                        Ensure <code class="bg-white px-1.5 py-0.5 rounded border border-ink-200 font-mono text-[11px]">js/config.js</code> has your valid Supabase Project URL & Anon Key so client browsers can communicate directly with your database.
+                      </p>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 space-y-2">
+                      <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-ink-900 text-gold-400 font-bold text-xs flex items-center justify-center">5</span>
+                        <h5 class="text-xs font-bold text-ink-900">Execute SQL Schema in Supabase</h5>
+                      </div>
+                      <p class="text-xs text-ink-600 leading-relaxed pl-8">
+                        Go to your <a href="https://supabase.com/dashboard" target="_blank" class="text-gold-600 font-bold underline">Supabase Dashboard</a> &rarr; <strong>SQL Editor</strong> &rarr; Click <strong>+ New Query</strong> &rarr; Paste the Complete SQL Schema from the tab above &rarr; Click <strong>Run</strong>.
+                      </p>
+                    </div>
+
+                    <!-- Step 6 -->
+                    <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 space-y-2">
+                      <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-ink-900 text-gold-400 font-bold text-xs flex items-center justify-center">6</span>
+                        <h5 class="text-xs font-bold text-ink-900">Test Live & Enable Free SSL</h5>
+                      </div>
+                      <p class="text-xs text-ink-600 leading-relaxed pl-8">
+                        In InfinityFree client area, go to <strong>Free SSL Certificates</strong> to get a free Let's Encrypt certificate. Open your domain in browser to verify student registration, login, and admin panel!
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- .htaccess Configuration Card -->
+                  <div class="bg-ink-50 rounded-2xl border border-ink-200 p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="text-base">📄</span>
+                        <h5 class="text-xs font-bold text-ink-900">Recommended <code class="font-mono text-amber-800">.htaccess</code> for InfinityFree</h5>
+                      </div>
+                      <button onclick="copyHtaccessCode()" class="text-xs font-bold text-gold-600 hover:text-gold-700 bg-white border border-ink-200 px-3 py-1.5 rounded-xl shadow-xs transition">
+                        Copy .htaccess
+                      </button>
+                    </div>
+                    <pre class="bg-ink-900 text-ink-100 p-4 rounded-xl text-[11px] font-mono overflow-x-auto table-scroll max-w-full leading-relaxed border border-ink-800"><code>Options -Indexes
+&lt;IfModule mod_rewrite.c&gt;
+    RewriteEngine On
+    RewriteBase /
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^(.*)$ $1.html [L]
+&lt;/IfModule&gt;</code></pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SUBTAB 2: FULL SQL SCHEMA -->
+              <div id="dbtab-pane-sql" class="dbtab-pane hidden space-y-5">
+                <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ink-100 pb-3">
+                    <div>
+                      <h4 class="font-display font-bold text-base text-ink-900">Complete Production PostgreSQL Schema</h4>
+                      <p class="text-xs text-ink-500">Idempotent SQL creating all 8 tables, indexes, Row-Level Security policies, and default seed records.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <button onclick="copyFullSql()" class="px-3.5 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-bold rounded-xl transition shadow-xs flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                        <span>Copy Schema</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Quick Patches Row -->
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="p-3 bg-ink-50 rounded-xl border border-ink-100 flex items-center justify-between">
+                      <div>
+                        <p class="text-xs font-bold text-ink-900">Important Links Table</p>
+                        <p class="text-[10px] text-ink-500">Quick portals table & RLS</p>
+                      </div>
+                      <button onclick="copySnippet('snippet-links')" class="text-xs font-bold text-gold-600 hover:underline">Copy</button>
+                    </div>
+                    <div class="p-3 bg-ink-50 rounded-xl border border-ink-100 flex items-center justify-between">
+                      <div>
+                        <p class="text-xs font-bold text-ink-900">Public Self-Register RLS</p>
+                        <p class="text-[10px] text-ink-500">Public insert permissions</p>
+                      </div>
+                      <button onclick="copySnippet('snippet-registration')" class="text-xs font-bold text-gold-600 hover:underline">Copy</button>
+                    </div>
+                    <div class="p-3 bg-ink-50 rounded-xl border border-ink-100 flex items-center justify-between">
+                      <div>
+                        <p class="text-xs font-bold text-ink-900">Students Extra Columns</p>
+                        <p class="text-[10px] text-ink-500">Status, academic year, referred</p>
+                      </div>
+                      <button onclick="copySnippet('snippet-students-alter')" class="text-xs font-bold text-gold-600 hover:underline">Copy</button>
+                    </div>
+                  </div>
+
+                  <!-- Syntax-highlighted SQL View -->
+                  <div class="rounded-2xl overflow-hidden border border-ink-800 bg-[#1d1f21] shadow-inner">
+                    <div class="bg-ink-950 px-4 py-2.5 border-b border-ink-800 flex items-center justify-between text-xs text-ink-400">
+                      <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+                        <span class="font-mono text-ink-300 ml-2">supabase_schema_complete.sql</span>
+                      </div>
+                      <span class="text-[11px] font-mono text-gold-400">PostgreSQL (Supabase)</span>
+                    </div>
+                    <pre class="p-4 max-h-[500px] overflow-y-auto text-xs font-mono leading-relaxed" style="margin: 0;"><code class="language-sql" id="sql-code-block">-- Loading complete SQL schema...</code></pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SUBTAB 3: LIVE DATABASE HEALTH DIAGNOSTICS -->
+              <div id="dbtab-pane-health" class="dbtab-pane hidden space-y-5">
+                <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                  <div class="flex items-center justify-between border-b border-ink-100 pb-3 flex-wrap gap-2">
+                    <div>
+                      <h4 class="font-display font-bold text-base text-ink-900">Live Supabase Database Health</h4>
+                      <p class="text-xs text-ink-500">Verifying live connectivity, read access, and row counts across all tables.</p>
+                    </div>
+                    <button onclick="runDbHealthCheck()" class="px-3.5 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      <span>Run Diagnostics</span>
+                    </button>
+                  </div>
+
+                  <div class="overflow-x-auto table-scroll max-w-full">
+                    <table class="w-full text-left text-xs border border-ink-100 rounded-xl overflow-hidden min-w-[600px]">
+                      <thead class="bg-ink-50 text-ink-600 font-semibold border-b border-ink-100">
+                        <tr>
+                          <th class="p-3">Table Name</th>
+                          <th class="p-3">Purpose</th>
+                          <th class="p-3">Status</th>
+                          <th class="p-3">Row Count</th>
+                          <th class="p-3 text-right">State</th>
+                        </tr>
+                      </thead>
+                      <tbody id="db-health-table-body" class="divide-y divide-ink-100">
+                        <tr>
+                          <td colspan="5" class="p-4 text-center text-ink-400 text-xs">
+                            Click "Run Diagnostics" or select this tab to ping Supabase tables.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </section>
+
+            <!-- SECTION 8: DATA IMPORT & EXPORT -->
+            <section id="section-data" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">📦</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">8. Data Management, CSV Studio & Backups</h2>
+                      <p class="text-xs text-ink-500">Import student batches, export ledger records, and manage JSON configuration backups.</p>
+                    </div>
+                  </div>
+                  <button onclick="saveAllGeneralSettings()" class="px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                    Save Section
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <!-- CSV Import -->
+                  <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 flex flex-col justify-between space-y-3">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="text-lg">📥</span>
+                        <h4 class="text-xs font-bold text-ink-900">Bulk Import Students</h4>
+                      </div>
+                      <p class="text-[11px] text-ink-500">Upload CSV with names, mobile, course, DOB, and academic year with visual column mapping.</p>
+                    </div>
+                    <button onclick="openModal('dashboard-import-modal')" class="w-full py-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition shadow-xs">
+                      Open CSV Import Studio
+                    </button>
+                  </div>
+
+                  <!-- CSV Export -->
+                  <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 flex flex-col justify-between space-y-3">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="text-lg">📤</span>
+                        <h4 class="text-xs font-bold text-ink-900">Export All Records CSV</h4>
+                      </div>
+                      <p class="text-[11px] text-ink-500">Download complete dataset of students, applications, and financial statuses as CSV.</p>
+                    </div>
+                    <button id="export-csv-btn" class="w-full py-2 bg-white hover:bg-ink-100 text-ink-900 border border-ink-200 text-xs font-semibold rounded-xl transition shadow-xs">
+                      Export CSV Data
+                    </button>
+                  </div>
+
+                  <!-- JSON Backup -->
+                  <div class="p-4 rounded-xl border border-ink-100 bg-ink-50/50 flex flex-col justify-between space-y-3">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="text-lg">💾</span>
+                        <h4 class="text-xs font-bold text-ink-900">JSON Settings Backup</h4>
+                      </div>
+                      <p class="text-[11px] text-ink-500">Export or restore your center's exact system configuration parameters in JSON.</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <button onclick="exportSettingsJson()" class="flex-1 py-2 bg-white hover:bg-ink-100 text-ink-900 border border-ink-200 text-xs font-semibold rounded-xl transition shadow-xs">
+                        Download JSON
+                      </button>
+                      <button onclick="document.getElementById('import-json-file').click()" class="flex-1 py-2 bg-gold-500 hover:bg-gold-400 text-ink-950 text-xs font-bold rounded-xl transition shadow-xs">
+                        Restore
+                      </button>
+                      <input type="file" id="import-json-file" accept=".json" class="hidden" onchange="importSettingsJson(event)">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 9: SECURITY & ADMIN -->
+            <section id="section-security" class="settings-section scroll-mt-36 space-y-4">
+              <div class="bg-white rounded-2xl border border-ink-100 p-6 shadow-card space-y-5">
+                <div class="border-b border-ink-100 pb-3.5 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-700 text-white font-bold text-sm flex items-center justify-center shadow-xs">🛡️</span>
+                    <div>
+                      <h2 class="font-display font-bold text-base text-ink-900">9. Administrator Security & Session Management</h2>
+                      <p class="text-xs text-ink-500">Administrator credentials, active session status, and infrastructure diagnostics.</p>
+                    </div>
+                  </div>
+                  <button onclick="resetSettingsToDefaults()" class="px-3 py-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 text-xs font-semibold rounded-xl transition">
+                    Reset Defaults
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="flex flex-col justify-between p-4 bg-ink-50 rounded-xl border border-ink-100 space-y-3">
+                    <div>
+                      <p class="text-xs font-bold text-ink-900">Administrator Credentials</p>
+                      <p class="text-xs text-ink-600 mt-0.5" id="account-email">admin@scholarledger.com</p>
+                      <p class="text-[11px] text-ink-400 mt-1">Role: Super Administrator (Full Write Access)</p>
+                    </div>
+                    <button onclick="openModal('password-modal')" class="px-4 py-2 bg-white border border-ink-200 hover:bg-ink-100 text-ink-800 text-xs font-semibold rounded-xl transition shadow-xs self-start">
+                      Change Password
+                    </button>
+                  </div>
+
+                  <div class="flex flex-col justify-between p-4 bg-red-50/60 rounded-xl border border-red-100 space-y-3">
+                    <div>
+                      <p class="text-xs font-bold text-red-900">Sign Out Administrator</p>
+                      <p class="text-xs text-red-700/80 mt-0.5">End current administrative session on this browser securely.</p>
+                    </div>
+                    <button id="logout-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition shadow-xs self-start">
+                      Log Out Now
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Infrastructure Health -->
+                <div class="pt-3 border-t border-ink-100 space-y-3">
+                  <h4 class="font-display font-semibold text-xs text-ink-900 uppercase tracking-wide">Live Infrastructure Health Status</h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="health-checks">
+                    <div class="flex items-center gap-3 p-3 bg-ink-50 rounded-xl border border-ink-100">
+                      <div class="w-3.5 h-3.5 rounded-full bg-emerald-500" id="health-db-status"></div>
+                      <div>
+                        <p class="text-xs font-bold text-ink-900">Database Connection</p>
+                        <p class="text-[10px] text-emerald-600">Connected & Operational</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3 bg-ink-50 rounded-xl border border-ink-100">
+                      <div class="w-3.5 h-3.5 rounded-full bg-emerald-500" id="health-auth-status"></div>
+                      <div>
+                        <p class="text-xs font-bold text-ink-900">Auth Token Service</p>
+                        <p class="text-[10px] text-emerald-600">Secure Session Active</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- CSV Import Studio Modal -->
+  <div id="dashboard-import-modal" class="modal-root hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-900/50 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white max-w-4xl w-full opacity-0 scale-95 transition-all rounded-2xl overflow-hidden shadow-2xl z-10 max-h-[90vh] flex flex-col">
+      <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between shrink-0 bg-ink-50/50">
+        <h3 class="font-display text-base font-semibold text-ink-900">CSV Import Studio · Students</h3>
+        <button data-close-modal="dashboard-import-modal" class="text-ink-400 hover:text-ink-700" onclick="resetImport()">✕</button>
+      </div>
+      
+      <div class="p-6 overflow-y-auto flex-1 space-y-5" id="import-steps-container">
+        <!-- Step 1: Upload -->
+        <div id="import-step-1">
+          <p class="text-xs text-ink-600 mb-4">Upload a student CSV file. Headers will be automatically mapped to student records.</p>
+          <div class="border-2 border-dashed border-ink-200 rounded-2xl p-8 text-center hover:bg-ink-50 transition cursor-pointer" id="dash-drop-zone" onclick="document.getElementById('dash-csv-file').click()">
+            <svg class="w-10 h-10 text-gold-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p class="text-sm font-semibold text-ink-900">Click to choose a CSV file</p>
+            <p class="text-xs text-ink-400 mt-1" id="dash-file-name-display">No file selected</p>
+            <input type="file" id="dash-csv-file" accept=".csv" class="hidden">
+          </div>
+        </div>
+
+        <!-- Step 2: Mapping -->
+        <div id="import-step-2" class="hidden flex flex-col h-full">
+          <p class="text-xs font-semibold text-ink-900 mb-1">Verify Column Mapping</p>
+          <p class="text-xs text-ink-500 mb-4">Map your CSV columns to ScholarLedger student fields.</p>
+          
+          <div class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="overflow-y-auto pr-2 space-y-2 bg-ink-50 rounded-xl p-4 border border-ink-100 max-h-72" id="mapping-container"></div>
+            
+            <div class="bg-white border border-ink-100 rounded-xl overflow-hidden flex flex-col max-h-72">
+               <div class="bg-ink-50 px-3 py-2 border-b border-ink-100 text-xs font-semibold text-ink-600">CSV Data Preview</div>
+               <div class="overflow-x-auto overflow-y-auto p-0 flex-1 table-scroll">
+                 <table class="w-full text-left text-xs whitespace-nowrap">
+                   <thead class="bg-white border-b border-ink-100" id="preview-thead"></thead>
+                   <tbody class="divide-y divide-ink-50" id="preview-tbody"></tbody>
+                 </table>
+               </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-end gap-3 shrink-0 pt-4 border-t border-ink-100">
+             <button class="px-4 py-2 border border-ink-200 bg-white text-ink-700 text-xs font-semibold rounded-xl hover:bg-ink-50" onclick="resetImport()">Cancel</button>
+             <button id="start-import-btn" class="px-5 py-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition">Start Import</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Progress -->
+        <div id="import-step-3" class="hidden">
+          <div class="text-center mb-4" id="import-progress-container">
+             <p class="text-xs font-bold text-ink-900">Importing records into database...</p>
+             <div class="w-full bg-ink-100 rounded-full h-2.5 mt-3">
+               <div class="bg-gold-500 h-2.5 rounded-full transition-all" style="width: 0%" id="import-progress-bar"></div>
+             </div>
+             <p class="text-xs text-ink-500 mt-2" id="import-progress-text">0 / 0 rows processed</p>
+          </div>
+
+          <div id="import-results-container" class="hidden">
+             <div class="flex items-center justify-center gap-8 mb-6">
+               <div class="text-center">
+                 <p class="text-3xl font-display font-bold text-emerald-600" id="import-success-count">0</p>
+                 <p class="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mt-1">Successful</p>
+               </div>
+               <div class="text-center">
+                 <p class="text-3xl font-display font-bold text-red-600" id="import-error-count">0</p>
+                 <p class="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mt-1">Failed</p>
+               </div>
+             </div>
+             <div id="import-error-list" class="max-h-48 overflow-y-auto space-y-2 border border-red-100 rounded-xl bg-red-50 p-3 hidden"></div>
+             <div class="mt-6 flex justify-center">
+               <button data-close-modal="dashboard-import-modal" class="px-6 py-2.5 bg-ink-900 text-white text-xs font-semibold rounded-xl" onclick="window.location.reload()">Done</button>
+             </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Password Modal -->
+  <div id="password-modal" class="modal-root hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-900/50 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white opacity-0 scale-95 transition-all rounded-2xl overflow-hidden shadow-2xl max-w-md w-full z-10">
+      <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between bg-ink-50/50">
+        <h3 class="font-display text-base font-semibold text-ink-900">Change Admin Password</h3>
+        <button type="button" data-close-modal="password-modal" class="text-ink-400 hover:text-ink-700">✕</button>
+      </div>
+      <form id="password-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">New Password *</label>
+          <input type="password" id="new-password" class="w-full h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500" required minlength="6">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1.5">Confirm New Password *</label>
+          <input type="password" id="confirm-password" class="w-full h-10 px-3.5 bg-ink-50 border border-ink-200 rounded-xl text-xs text-ink-900 focus:outline-none focus:border-gold-500" required minlength="6">
+        </div>
+        <button type="submit" id="password-save-btn" class="w-full h-10 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold rounded-xl transition">
+          Update Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <nav id="bottom-nav"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>
