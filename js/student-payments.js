@@ -118,7 +118,7 @@ function renderPaymentsTable() {
   if (filteredPayments.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" class="text-center py-12 text-ink-400">
+        <td colspan="8" class="text-center py-8 text-ink-400">
           <p class="font-medium text-sm text-ink-600">No payment records found.</p>
           <button onclick="resetPaymentFilters()" class="mt-2 text-xs text-gold-600 font-semibold hover:underline">Reset Filters</button>
         </td>

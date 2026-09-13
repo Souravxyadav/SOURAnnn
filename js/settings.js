@@ -1,9 +1,9 @@
 // Settings Controller (9 Complete Vertically Scrollable Administrative Modules)
 let currentSettings = {
   center_name: "ScholarLedger Advisory Center",
-  support_whatsapp: "919876543210",
-  support_phone: "+91 9876543210",
-  support_email: "admin@scholarledger.com",
+  support_whatsapp: "",
+  support_phone: "",
+  support_email: "",
   default_session: "2025-2026",
   currency: "INR",
   commission_rate: 10,
@@ -146,9 +146,9 @@ function populateFormFields() {
   };
 
   setVal("setting-center-name", currentSettings.center_name || currentSettings.org_name || "ScholarLedger Advisory Center");
-  setVal("setting-support-whatsapp", currentSettings.support_whatsapp || "919876543210");
-  setVal("setting-support-phone", currentSettings.support_phone || "+91 9876543210");
-  setVal("setting-support-email", currentSettings.support_email || "admin@scholarledger.com");
+  setVal("setting-support-whatsapp", currentSettings.support_whatsapp || "");
+  setVal("setting-support-phone", currentSettings.support_phone || "");
+  setVal("setting-support-email", currentSettings.support_email || "");
   setVal("setting-default-session", currentSettings.default_session || "2025-2026");
   setVal("setting-currency", currentSettings.currency || "INR");
 
@@ -549,9 +549,9 @@ function resetSettingsToDefaults() {
   if (!confirm("Are you sure you want to reset all settings to system defaults?")) return;
   currentSettings = {
     center_name: "ScholarLedger Advisory Center",
-    support_whatsapp: "919876543210",
-    support_phone: "+91 9876543210",
-    support_email: "admin@scholarledger.com",
+    support_whatsapp: "",
+    support_phone: "",
+    support_email: "",
     default_session: "2025-2026",
     currency: "INR",
     commission_rate: 10,
@@ -831,6 +831,7 @@ ALTER TABLE students ADD COLUMN IF NOT EXISTS address text;
 ALTER TABLE students ADD COLUMN IF NOT EXISTS annual_income numeric(12, 2);
 ALTER TABLE students ADD COLUMN IF NOT EXISTS percentage numeric(5, 2) DEFAULT 0.00;
 ALTER TABLE students ADD COLUMN IF NOT EXISTS status text DEFAULT 'Pending';
+ALTER TABLE students ADD COLUMN IF NOT EXISTS commission_percentage numeric(5, 2) DEFAULT 0.00;
 ALTER TABLE students ADD COLUMN IF NOT EXISTS academic_year text DEFAULT '2024-2025';
 ALTER TABLE students ADD COLUMN IF NOT EXISTS referred_through text DEFAULT 'Self Registration';
 ALTER TABLE students ADD COLUMN IF NOT EXISTS notes text;

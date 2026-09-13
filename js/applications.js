@@ -49,7 +49,7 @@ function getInitials(name) {
 async function loadApplications() {
   const sb = window.supabaseClient;
   const [appRes, payRes] = await Promise.all([
-    sb.from("scholarship_applications").select("*, students(*), scholarships(*)").order("updated_at", { ascending: false }),
+    sb.from("scholarship_applications").select("*, students(*), scholarships(*)").order("updated_at", { ascending: false }).limit(500),
     sb.from("application_payments").select("*")
   ]);
 
@@ -233,7 +233,7 @@ function render(list) {
 
   if (list.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full text-center py-16 bg-white rounded-3xl border border-dashed border-ink-200 p-8 shadow-card">
+      <div class="col-span-full text-center py-10 bg-white rounded-3xl border border-dashed border-ink-200 p-6 shadow-card">
         <div class="w-14 h-14 rounded-2xl bg-gold-50 text-gold-600 flex items-center justify-center mx-auto text-2xl mb-3 shadow-xs">📋</div>
         <p class="font-display font-bold text-base text-ink-900">No applications match your filter.</p>
         <p class="text-xs text-ink-400 mt-1 mb-4 max-w-sm mx-auto">Try adjusting your search criteria or register a new student scholarship application.</p>

@@ -11,7 +11,7 @@ async function requireAuth() {
 
 async function redirectIfLoggedIn() {
   const { data: { session } } = await window.supabaseClient.auth.getSession();
-  if (session) window.location.href = "index.html";
+  if (session) window.location.href = "dashboard.html";
 }
 
 async function login(email, password) {

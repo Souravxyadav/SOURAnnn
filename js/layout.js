@@ -1,5 +1,5 @@
 const NAV_ITEMS = [
-  { key: "dashboard", label: "Dashboard", href: "index.html", icon: "M3 12l2-2 7-7 7 7 2 2M5 10v10a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V10" },
+  { key: "dashboard", label: "Dashboard", href: "dashboard.html", icon: "M3 12l2-2 7-7 7 7 2 2M5 10v10a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V10" },
   { key: "students", label: "Students Directory", href: "students.html", icon: "M12 4a4 4 0 100 8 4 4 0 000-8zM4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" },
   { key: "scholarships", label: "Scholarships", href: "scholarships.html", icon: "M12 3l9 4.5-9 4.5-9-4.5L12 3zM3 7.5v6c0 1.7 4 4.5 9 4.5s9-2.8 9-4.5v-6" },
   { key: "applications", label: "Applications", href: "applications.html", icon: "M9 3h6a2 2 0 012 2v14l-5-3-5 3V5a2 2 0 012-2z" },
@@ -23,7 +23,7 @@ function renderLayout(activeKey, pageTitle) {
     sidebar.className = "hidden md:flex md:flex-col md:w-64 md:shrink-0 bg-ink-900 text-ink-50 min-h-screen sticky top-0 border-r border-ink-800 z-30";
     sidebar.innerHTML = `
       <div class="px-5 py-5 border-b border-ink-800 flex items-center justify-between">
-        <a href="index.html" class="flex items-center gap-2.5">
+        <a href="dashboard.html" class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-ink-950 font-bold text-sm shadow-sm">
             🎓
           </div>
@@ -76,7 +76,7 @@ function renderLayout(activeKey, pageTitle) {
           </svg>
         </button>
 
-        <a href="index.html" class="flex items-center gap-2 shrink-0 min-w-0">
+        <a href="dashboard.html" class="flex items-center gap-2 shrink-0 min-w-0">
           <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-ink-950 font-bold text-xs shadow-xs shrink-0">
             🎓
           </div>
@@ -123,7 +123,7 @@ function renderLayout(activeKey, pageTitle) {
       
       <!-- Drawer Header -->
       <div class="px-4 py-4 border-b border-ink-800 flex items-center justify-between">
-        <a href="index.html" class="flex items-center gap-2.5">
+        <a href="dashboard.html" class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-ink-950 font-bold text-sm shadow-xs">
             🎓
           </div>
@@ -176,7 +176,7 @@ function renderLayout(activeKey, pageTitle) {
   if (bottomNav) {
     bottomNav.className = "md:hidden fixed bottom-0 left-0 right-0 z-40 bg-ink-950/95 backdrop-blur-md text-ink-300 border-t border-ink-800 flex items-stretch px-1 py-1 shadow-2xl safe-bottom";
     bottomNav.innerHTML = `
-      <a href="index.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 text-[10px] font-medium ${activeKey === 'dashboard' ? 'text-gold-400 font-bold' : 'text-ink-400'}">
+      <a href="dashboard.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 text-[10px] font-medium ${activeKey === 'dashboard' ? 'text-gold-400 font-bold' : 'text-ink-400'}">
         ${iconSvg(NAV_ITEMS[0].icon, "w-4 h-4")}
         <span class="truncate">Home</span>
       </a>
@@ -267,13 +267,9 @@ document.addEventListener("keydown", (e) => {
 function handleAdminLogout() {
   if (window.supabaseClient && window.supabaseClient.auth) {
     window.supabaseClient.auth.signOut().then(() => {
-      localStorage.removeItem("scholarledger_mock_session_v1");
-      localStorage.setItem("scholarledger_logged_out", "true");
       window.location.href = "login.html";
     });
   } else {
-    localStorage.removeItem("scholarledger_mock_session_v1");
-    localStorage.setItem("scholarledger_logged_out", "true");
     window.location.href = "login.html";
   }
 }

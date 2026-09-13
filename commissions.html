@@ -86,22 +86,21 @@
         </div>
 
         <!-- Filter & Search Toolbar -->
-        <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-ink-100 shadow-card space-y-3">
+        <div class="bg-white p-2.5 sm:p-3 rounded-2xl border border-ink-100 shadow-sm space-y-2">
           
           <!-- Top row: Search input + Selects -->
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div class="relative flex-1 max-w-md">
               <input id="comm-search" oninput="filterLedger()" type="search" placeholder="Search student, mobile, STU code, scheme…"
-                class="form-input-compact w-full pl-9">
-              <svg class="w-4 h-4 text-ink-400 absolute left-3 top-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                class="w-full h-8 rounded-lg border border-ink-200 bg-ink-50/50 pl-8 pr-3 text-[11px] md:text-xs outline-none focus:border-gold-500 focus:bg-white focus:ring-1 focus:ring-gold-500 transition">
+              <svg class="w-3.5 h-3.5 text-ink-400 absolute left-2.5 top-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-              <select id="filter-academic-year" onchange="filterLedger()" class="form-input-compact">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <select id="filter-academic-year" onchange="filterLedger()" class="h-7 text-[10px] sm:text-[11px] rounded-lg border border-ink-200 bg-ink-50/50 px-2 outline-none focus:border-gold-500 focus:bg-white transition text-ink-800">
                 <option value="all">All Sessions</option>
               </select>
-
-              <select id="filter-payment-status" onchange="filterLedger()" class="form-input-compact">
+              <select id="filter-payment-status" onchange="filterLedger()" class="h-7 text-[10px] sm:text-[11px] rounded-lg border border-ink-200 bg-ink-50/50 px-2 outline-none focus:border-gold-500 focus:bg-white transition text-ink-800">
                 <option value="all">All Fee Statuses</option>
                 <option value="paid">✓ Fully Settled</option>
                 <option value="partial">Partially Paid</option>
@@ -111,19 +110,19 @@
           </div>
 
           <!-- Bottom tabs: Workflow Scope -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-ink-100">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1.5 border-t border-ink-100">
             <div class="flex flex-wrap items-center gap-1.5" id="scope-tabs">
-              <button type="button" onclick="setCommissionScope('approved')" id="scope-btn-approved" class="scope-tab text-xs font-semibold px-3 py-1.5 rounded-xl bg-ink-900 text-white transition shadow-xs flex items-center gap-1">
+              <button type="button" onclick="setCommissionScope('approved')" id="scope-btn-approved" class="scope-tab text-[10px] sm:text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-ink-900 text-white transition shadow-xs flex items-center gap-1">
                 <span>Approved in System</span>
-                <span id="badge-count-approved" class="ml-1 px-1.5 py-0.2 bg-gold-500 text-ink-950 font-bold rounded-md text-[10px]">0</span>
+                <span id="badge-count-approved" class="ml-0.5 px-1 bg-gold-500 text-ink-950 font-bold rounded text-[9px]">0</span>
               </button>
-              <button type="button" onclick="setCommissionScope('pending-fee')" id="scope-btn-pending-fee" class="scope-tab text-xs font-medium px-3 py-1.5 rounded-xl bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
+              <button type="button" onclick="setCommissionScope('pending-fee')" id="scope-btn-pending-fee" class="scope-tab text-[10px] sm:text-[11px] font-medium px-2.5 py-1 rounded-lg bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
                 <span>Fee Balance Due</span>
               </button>
-              <button type="button" onclick="setCommissionScope('settled')" id="scope-btn-settled" class="scope-tab text-xs font-medium px-3 py-1.5 rounded-xl bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
+              <button type="button" onclick="setCommissionScope('settled')" id="scope-btn-settled" class="scope-tab text-[10px] sm:text-[11px] font-medium px-2.5 py-1 rounded-lg bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
                 <span>Fully Settled</span>
               </button>
-              <button type="button" onclick="setCommissionScope('all')" id="scope-btn-all" class="scope-tab text-xs font-medium px-3 py-1.5 rounded-xl bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
+              <button type="button" onclick="setCommissionScope('all')" id="scope-btn-all" class="scope-tab text-[10px] sm:text-[11px] font-medium px-2.5 py-1 rounded-lg bg-ink-50 hover:bg-ink-100 text-ink-600 transition">
                 <span>All Applications</span>
               </button>
             </div>
@@ -152,7 +151,7 @@
           </div>
 
           <div id="ledger-cards-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="col-span-full text-center py-12 text-ink-400 bg-white rounded-2xl border border-ink-100 p-8 shadow-card">
+            <div class="col-span-full text-center py-8 text-ink-400 bg-white rounded-2xl border border-ink-100 p-6 shadow-card">
               Loading commissions & student fees ledger…
             </div>
           </div>
@@ -365,6 +364,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
   <script src="js/config.js"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/constants.js"></script>

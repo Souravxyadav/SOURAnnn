@@ -7,13 +7,18 @@ let studentInquiriesList = [];
 let schemesSearchTerm = "";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const stdToken = localStorage.getItem("student_session_token");
-  if (!stdToken) {
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
+  if (!session) {
     window.location.href = "student-login.html";
     return;
   }
-
-  await loadStudentPortalData(stdToken);
+  const { data: st } = await window.supabaseClient.from("students").select("id").eq("auth_user_id", session.user.id).single();
+  if (!st) {
+    await window.supabaseClient.auth.signOut();
+    window.location.href = "student-login.html";
+    return;
+  }
+  await loadStudentPortalData(st.id);
 });
 
 async function loadStudentPortalData(studentId) {
@@ -471,7 +476,7 @@ function renderSchemesTab() {
 
   if (list.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full p-8 text-center bg-white rounded-3xl border border-ink-100 shadow-card">
+      <div class="col-span-full p-6 text-center bg-white rounded-3xl border border-ink-100 shadow-card">
         <p class="text-xs text-ink-400">No scholarship schemes match your selected search and filters.</p>
         <button onclick="resetPortalSchemesFilters()" class="mt-2 text-xs font-semibold text-gold-600 hover:underline">Reset Filters</button>
       </div>`;
@@ -597,7 +602,7 @@ function renderSettingsTab() {
 
   const studentCode = s.code || s.student_code || "STU";
   const aadhaarNo = s.aadhaar_number || s.aadhaar || "";
-  const bankAcc = s.account_number || "987654321098";
+  const bankAcc = s.account_number || "";
   const ifsc = s.ifsc_code || "SBIN0001234";
 
   // 1. Academic fields
@@ -672,8 +677,8 @@ function renderSettingsTab() {
 }
 
 function renderContactTab(settingsList) {
-  let whatsapp = "+91 9876543210";
-  let phone = "+91 9876543210";
+  let whatsapp = "";
+  let phone = "";
   let email = "scholarships@coordinator.edu";
 
   if (Array.isArray(settingsList)) {
@@ -714,7 +719,7 @@ function renderStudentInquiries() {
 
   if (studentInquiriesList.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center bg-ink-50/50 rounded-2xl border border-ink-100 space-y-1.5">
+      <div class="p-6 text-center bg-ink-50/50 rounded-2xl border border-ink-100 space-y-1.5">
         <p class="text-xs font-bold text-ink-700">No help inquiries submitted yet</p>
         <p class="text-[11px] text-ink-400">Fill out the form on the left to submit questions regarding your applications, documents, or bank credits.</p>
       </div>`;
@@ -832,8 +837,8 @@ async function reloadStudentInquiries() {
   }
 }
 
-function handleStudentLogout() {
-  localStorage.removeItem("student_session_token");
+async function handleStudentLogout() {
+  await window.supabaseClient.auth.signOut();
   toast("Signed out successfully", "success");
   setTimeout(() => {
     window.location.href = "student-login.html";

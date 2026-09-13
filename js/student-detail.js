@@ -119,8 +119,8 @@ async function loadAndRenderScholarshipEligibility(student) {
     let ineligibleCount = 0;
 
     results.forEach(r => {
-      if (r.status === "ELIGIBLE") eligibleCount++;
-      else if (r.status === "NEEDS_REVIEW") reviewCount++;
+      if (r.status === "Eligible") eligibleCount++;
+      else if (r.status === "Missing Information" || r.status === "Partially Matched") reviewCount++;
       else ineligibleCount++;
     });
 
@@ -163,7 +163,7 @@ async function loadAndRenderScholarshipEligibility(student) {
         : (Array.isArray(reasons) ? reasons : []);
 
       let breakdownHtml = "";
-      if (status === "ELIGIBLE") {
+      if (status === "Eligible") {
         breakdownHtml = `
           <div class="space-y-1">
             <div class="flex items-center gap-1.5 text-emerald-800 font-semibold text-xs">
@@ -174,7 +174,7 @@ async function loadAndRenderScholarshipEligibility(student) {
               ${positiveNotes.slice(0, 4).map(n => `<span>• ${escapeHtml(n)}</span>`).join("")}
             </div>
           </div>`;
-      } else if (status === "NEEDS_REVIEW") {
+      } else if (status === "Missing Information" || status === "Partially Matched") {
         breakdownHtml = `
           <div class="space-y-1">
             <div class="flex items-center gap-1.5 text-amber-800 font-semibold text-xs">
@@ -211,7 +211,7 @@ async function loadAndRenderScholarshipEligibility(student) {
                 ${typeof renderCopyButton === "function" ? renderCopyButton(app.application_no, "Application ID") : ""}
               </div>` : ""}
           </div>`;
-      } else if (status === "ELIGIBLE") {
+      } else if (status === "Eligible") {
         actionHtml = `
           <div class="text-right">
             <a href="application.html?student_id=${student.id}&scholarship_id=${s.id}" class="btn-compact btn-primary">
@@ -219,7 +219,7 @@ async function loadAndRenderScholarshipEligibility(student) {
               <span>→</span>
             </a>
           </div>`;
-      } else if (status === "NEEDS_REVIEW") {
+      } else if (status === "Missing Information" || status === "Partially Matched") {
         actionHtml = `
           <div class="text-right">
             <a href="application.html?student_id=${student.id}&scholarship_id=${s.id}" class="btn-compact btn-secondary text-amber-900 border-amber-300 bg-amber-50 hover:bg-amber-100">
@@ -461,7 +461,7 @@ function renderApplicationsList(apps) {
       .filter(p => p.status === "Received")
       .reduce((s, p) => s + Number(p.amount || 0), 0);
     const expected = Number(app.expected_amount || 0);
-    const feeRate = app.advisory_fee_rate || app.commission_rate || 10;
+    const feeRate = currentStudent.commission_percentage !== undefined ? currentStudent.commission_percentage : (app.advisory_fee_rate || app.commission_rate || 10);
     const feeAmount = Number(app.advisory_fee_amount || (expected * feeRate / 100));
 
     // Determine status badge class
@@ -604,7 +604,7 @@ function renderAcademicAndPersonal(s) {
     { label: "Social Category", val: s.category || "General" },
     { label: "Religion", val: s.religion || "—" },
     { label: "PwD Status", val: s.pwd_status || (s.is_pwd ? "Yes" : "No") },
-    { label: "Family Annual Income", val: s.annual_income ? `₹${Number(s.annual_income).toLocaleString("en-IN")}` : "—" }
+    { label: "Family Annual Income", val: s.annual_income ? `₹${Number(s.annual_income).toLocaleString("en-IN")}` : "—" }, { label: "Commission (%)", val: s.commission_percentage !== undefined ? s.commission_percentage + "%" : "10%" }
   ];
 
   document.getElementById("grid-personal").innerHTML = personalItems.map(item => `
@@ -647,7 +647,7 @@ function renderBankDetails(s) {
   if (!container) return;
 
   const bankName = s.bank_name || "State Bank of India (Designated DBT)";
-  const accNo = s.account_number || "987654321098";
+  const accNo = s.account_number || "";
   const ifsc = s.ifsc_code || "SBIN0001234";
 
   container.innerHTML = `
@@ -785,7 +785,7 @@ async function loadStudentInquiries(student) {
 
     if (studentInquiries.length === 0) {
       container.innerHTML = `
-        <div class="p-8 bg-white rounded-3xl border border-ink-100 text-center space-y-2">
+        <div class="p-6 bg-white rounded-3xl border border-ink-100 text-center space-y-2">
           <div class="w-10 h-10 rounded-xl bg-ink-50 text-ink-400 flex items-center justify-center text-lg mx-auto">💬</div>
           <p class="text-xs font-bold text-ink-800">No Support Requests from this Student</p>
           <p class="text-xs text-ink-400">When the student submits a question from the student portal, it will appear here for you to answer.</p>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scholarship Ledger</title>
+<meta name="description" content="Scholarship student management system to track students, scholarships, applications, documents, and payments.">
+<meta property="og:title" content="Scholarship Ledger">
+<meta property="og:description" content="Scholarship student management system to track students, scholarships, applications, documents, and payments.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-init.js"></script>
+<link rel="stylesheet" href="css/base.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="bg-paper min-h-screen">
+
+  <div class="flex min-h-screen w-full max-w-full">
+    <aside id="sidebar"></aside>
+
+    <div class="flex-1 min-w-0 w-full max-w-full min-h-screen pb-24 md:pb-8">
+      <header id="topbar"></header>
+
+      
+      <main class="px-3.5 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto space-y-6 md:space-y-8">
+        <!-- Header & Date -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 class="font-display text-2xl font-bold text-ink-900">Admin Dashboard</h1>
+            <p class="text-sm text-ink-500 mt-1" id="dash-date">Welcome back, Coordinator.</p>
+          </div>
+          <div class="flex gap-2">
+            <a href="commissions.html" class="px-4 py-2 bg-ink-50 border border-ink-200 text-ink-700 hover:text-ink-900 font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
+              <span>Ledger</span>
+            </a>
+            <a href="helpdesk.html" class="px-4 py-2 bg-ink-900 hover:bg-gold-500 hover:text-ink-950 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
+              <span>Reply Center</span>
+              <span id="dashboard-inquiry-badge" class="px-1.5 py-0.5 text-[9px] font-bold bg-amber-400 text-ink-950 rounded-full hidden">0</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Stat cards -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition cursor-default">
+            <div class="w-10 h-10 rounded-xl bg-ink-50 text-ink-600 flex items-center justify-center text-lg mb-3">👥</div>
+            <p class="text-xs text-ink-500 font-bold uppercase tracking-wider">Total Students</p>
+            <p id="stat-students" class="font-display text-2xl sm:text-3xl font-bold text-ink-900 mt-1">—</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition cursor-default">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg mb-3">📑</div>
+            <p class="text-xs text-ink-500 font-bold uppercase tracking-wider">Applications</p>
+            <p id="stat-applications" class="font-display text-2xl sm:text-3xl font-bold text-ink-900 mt-1">—</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition cursor-default">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg mb-3">✅</div>
+            <p class="text-xs text-emerald-600/80 font-bold uppercase tracking-wider">Approved</p>
+            <p id="stat-approved" class="font-display text-2xl sm:text-3xl font-bold text-emerald-700 mt-1">—</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition cursor-default">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg mb-3">⏳</div>
+            <p class="text-xs text-amber-600/80 font-bold uppercase tracking-wider">Pending Review</p>
+            <p id="stat-pending" class="font-display text-2xl sm:text-3xl font-bold text-amber-700 mt-1">—</p>
+          </div>
+        </section>
+
+        <!-- Money summary & Quick actions -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-4">
+          <section class="xl:col-span-7 bg-ink-900 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 text-white shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+            <div class="absolute right-20 -bottom-10 w-32 h-32 bg-gold-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="hidden sm:flex w-12 h-12 rounded-xl seal shrink-0 items-center justify-center shadow-lg relative z-10 bg-white">
+              <span class="font-display text-[9px] font-bold text-ink-900 text-center leading-tight">NET<br>DUE</span>
+            </div>
+            
+            <div class="w-full flex-1 flex flex-row items-center justify-between gap-2 sm:gap-4 relative z-10 min-w-0">
+              <div class="min-w-0 border-white/10">
+                <p class="text-[9px] sm:text-[10px] uppercase tracking-wider text-ink-300 font-bold truncate">Expected</p>
+                <p id="stat-expected" class="font-display text-lg sm:text-xl font-bold mt-0.5 text-white truncate">—</p>
+              </div>
+              <div class="min-w-0 border-l border-white/10 pl-2 sm:pl-4">
+                <p class="text-[9px] sm:text-[10px] uppercase tracking-wider text-emerald-400 font-bold truncate">Received</p>
+                <p id="stat-received" class="font-display text-lg sm:text-xl font-bold mt-0.5 text-emerald-300 truncate">—</p>
+              </div>
+              <div class="min-w-0 border-l border-white/10 pl-2 sm:pl-4">
+                <p class="text-[9px] sm:text-[10px] uppercase tracking-wider text-gold-400 font-bold truncate">Pending / Due</p>
+                <p id="stat-pending-amount" class="font-display text-lg sm:text-xl font-bold mt-0.5 text-gold-300 truncate">—</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="xl:col-span-5 grid grid-cols-3 sm:grid-cols-5 xl:grid-cols-3 gap-2">
+            <a href="students.html?new=1" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">➕</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">New<br>Student</span>
+            </a>
+            <a href="scholarships.html?new=1" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">🎓</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">New<br>Scheme</span>
+            </a>
+            <a href="application.html" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">📝</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">New<br>App</span>
+            </a>
+            <a href="students.html" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">👥</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">All<br>Students</span>
+            </a>
+            <a href="scholarships.html" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group hidden sm:flex xl:hidden">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">📚</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">All<br>Schemes</span>
+            </a>
+            <a href="applications.html" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group hidden sm:flex xl:hidden">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">📂</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">All<br>Apps</span>
+            </a>
+            <a href="commissions.html" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">💰</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">Ledger</span>
+            </a>
+            <a href="helpdesk.html" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">💬</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">Reply<br>Center</span>
+            </a>
+            <a href="links.html" class="bg-white border border-ink-100 rounded-xl shadow-card p-2 sm:p-2.5 flex flex-col items-center justify-center gap-1 hover:border-gold-400 hover:-translate-y-0.5 transition text-center group hidden sm:flex xl:hidden">
+              <div class="w-6 h-6 rounded-full bg-ink-50 text-ink-600 flex items-center justify-center group-hover:bg-gold-50 group-hover:text-gold-700 transition text-xs">🔗</div>
+              <span class="text-[9px] font-bold text-ink-800 leading-tight">Useful<br>Links</span>
+            </a>
+          </section>
+        </div>
+
+        <!-- Charts and Activity Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Column 1: Application Status Chart -->
+          <section class="lg:col-span-1 bg-white rounded-3xl border border-ink-100 p-6 shadow-card flex flex-col">
+            <h2 class="font-display text-base font-bold text-ink-900 mb-1">Application Pipeline</h2>
+            <p class="text-[11px] text-ink-400 mb-6 font-medium">Distribution by current status</p>
+            <div id="chart-container" class="w-full flex-1 min-h-[250px] flex items-center justify-center relative">
+              <p class="text-xs text-ink-400 absolute">Loading Chart...</p>
+            </div>
+            <div id="chart-legend" class="mt-4 flex flex-wrap items-center justify-center gap-3 text-[10px] font-bold"></div>
+          </section>
+
+          <!-- Column 2: Recent Activity -->
+          <section class="lg:col-span-1 bg-white rounded-3xl border border-ink-100 p-6 shadow-card flex flex-col">
+            <div class="flex items-center justify-between mb-1">
+              <h2 class="font-display text-base font-bold text-ink-900">Recent Applications</h2>
+              <a href="applications.html" class="text-[10px] font-bold text-gold-600 hover:underline uppercase tracking-wider">View All</a>
+            </div>
+            <p class="text-[11px] text-ink-400 mb-4 font-medium">Latest tracked forms</p>
+            <div id="recent-list" class="space-y-3 flex-1 overflow-y-auto pr-1">
+              <p class="text-xs text-ink-400">Loading…</p>
+            </div>
+          </section>
+
+          <!-- Column 3: Recent Transactions & Deadlines -->
+          <section class="lg:col-span-1 flex flex-col gap-6">
+            
+            <!-- Recent Transactions -->
+            <div class="bg-white rounded-3xl border border-ink-100 p-6 shadow-card flex-1 flex flex-col">
+              <div class="flex items-center justify-between mb-1">
+                <h2 class="font-display text-base font-bold text-ink-900">Latest Payments</h2>
+                <a href="commissions.html" class="text-[10px] font-bold text-gold-600 hover:underline uppercase tracking-wider">Ledger</a>
+              </div>
+              <p class="text-[11px] text-ink-400 mb-4 font-medium">Recent student & commission credits</p>
+              <div id="recent-payments" class="space-y-3 overflow-y-auto pr-1 flex-1">
+                <p class="text-xs text-ink-400">Loading…</p>
+              </div>
+            </div>
+
+            <!-- Deadlines -->
+            <div class="bg-ink-50 rounded-3xl border border-ink-100 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h2 class="font-display text-sm font-bold text-ink-900 flex items-center gap-2"><span>📅</span> Upcoming Deadlines</h2>
+              </div>
+              <div id="deadline-list" class="space-y-2">
+                <p class="text-xs text-ink-400">Loading…</p>
+              </div>
+            </div>
+            
+          </section>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <nav id="bottom-nav"></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

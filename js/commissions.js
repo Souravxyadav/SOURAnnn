@@ -30,15 +30,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function isStudentPayment(p) {
-  if (!p) return false;
-  if (p.payment_type === "Student") return true;
-  const n = (p.notes || "").toLowerCase();
-  if (n.includes("[category: student]") || n.includes("[type: student]") || n.includes("student disbursal")) return true;
-  return false;
+  return p && !p.is_commission;
 }
 
 function isCommissionPayment(p) {
-  return !isStudentPayment(p);
+  return p && p.is_commission;
 }
 
 function isApprovedApp(app) {
@@ -56,7 +52,7 @@ async function loadCommissionsData() {
   try {
     const sb = window.supabaseClient;
     const [appsRes, payRes] = await Promise.all([
-      sb.from("scholarship_applications").select("*, students(*), scholarships(*)").order("updated_at", { ascending: false }),
+      sb.from("scholarship_applications").select("*, students(*), scholarships(*)").order("updated_at", { ascending: false }).limit(500),
       sb.from("application_payments").select("*").order("payment_date", { ascending: false })
     ]);
 
@@ -83,7 +79,7 @@ function calculateMetrics() {
 
   systemApps.forEach(app => {
     const award = Number(app.scholarship_amount || app.expected_amount || 0);
-    const rate = Number(app.commission_percentage || 10);
+    const rate = Number((app.students && app.students.commission_percentage !== undefined) ? app.students.commission_percentage : (app.commission_percentage || 10));
     const commDue = Number(app.commission_amount || (award * rate / 100));
 
     totalSanctioned += award;
@@ -187,7 +183,7 @@ function filterLedger() {
     const matchesYear = year === "all" || app.academic_year === year;
 
     const award = Number(app.scholarship_amount || app.expected_amount || 0);
-    const rate = Number(app.commission_percentage || 10);
+    const rate = Number((app.students && app.students.commission_percentage !== undefined) ? app.students.commission_percentage : (app.commission_percentage || 10));
     const due = Number(app.commission_amount || (award * rate / 100));
 
     const appPays = allPayments.filter(p => p.application_id === app.id && isCommissionPayment(p) && p.status === "Received");
@@ -238,7 +234,7 @@ function renderLedgerCards() {
 
   if (filteredApplications.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full py-16 text-center text-ink-400 bg-white rounded-3xl border border-dashed border-ink-200 p-8 shadow-card">
+      <div class="col-span-full py-10 text-center text-ink-400 bg-white rounded-3xl border border-dashed border-ink-200 p-6 shadow-card">
         <div class="w-14 h-14 rounded-2xl bg-gold-50 text-gold-600 flex items-center justify-center mx-auto text-2xl mb-3 shadow-xs">💰</div>
         <p class="font-display font-bold text-base text-ink-900">No applications match your filter.</p>
         <p class="text-xs text-ink-400 mt-1 max-w-sm mx-auto">Applications automatically appear here once approved, or adjust your search filter above.</p>
@@ -253,7 +249,7 @@ function renderLedgerCards() {
     const student = app.students || {};
     const sch = app.scholarships || {};
     const award = Number(app.scholarship_amount || app.expected_amount || 0);
-    const rate = Number(app.commission_percentage || 10);
+    const rate = Number((app.students && app.students.commission_percentage !== undefined) ? app.students.commission_percentage : (app.commission_percentage || 10));
     const due = Number(app.commission_amount || (award * rate / 100));
     const netStudentShare = Math.max(0, award - due);
 
@@ -618,44 +614,39 @@ async function onSavePayment(e) {
     ].filter(Boolean);
     const formattedNotes = noteParts.join(" · ");
 
-    // Standard payload with dual compatibility
-    const standardPayload = {
-      application_id: appId,
-      amount: amount,
-      payment_date: date,
-      transaction_id: ref,
-      reference_no: ref,
-      payment_type: category,
-      payment_method: mode,
-      payment_mode: mode,
-      received_by: collectedBy || "Admin",
-      status: "Received",
-      notes: formattedNotes,
-      remarks: formattedNotes
-    };
 
-    let insertRes = await window.supabaseClient.from("application_payments").insert(standardPayload).select();
-    
-    if (insertRes.error) {
-      console.warn("Primary payment insert warning, trying minimal fallback:", insertRes.error);
-      const fallbackPayload = {
+    let insertRes;
+    if (category === "Commission") {
+      insertRes = await window.supabaseClient.from("commission_transactions").insert({
+        application_id: appId,
+        amount: amount,
+        payment_date: date,
+        payment_mode: mode,
+        reference_no: ref,
+        status: "Received",
+        notes: formattedNotes
+      }).select();
+    } else {
+      insertRes = await window.supabaseClient.from("application_payments").insert({
         application_id: appId,
         amount: amount,
         payment_date: date,
         payment_method: mode,
+        transaction_id: ref,
         status: "Received",
         notes: formattedNotes
-      };
-      const retryRes = await window.supabaseClient.from("application_payments").insert(fallbackPayload).select();
-      if (retryRes.error) throw retryRes.error;
+      }).select();
     }
+    
+    if (insertRes.error) throw insertRes.error;
+
 
     // Safely update application commission status if columns exist
     try {
       const app = allApplications.find(a => a.id === appId);
       if (app && category === "Commission") {
         const award = Number(app.scholarship_amount || app.expected_amount || 0);
-        const rate = Number(app.commission_percentage || 10);
+        const rate = Number((app.students && app.students.commission_percentage !== undefined) ? app.students.commission_percentage : (app.commission_percentage || 10));
         const due = Number(app.commission_amount || (award * rate / 100));
 
         const existingPays = allPayments.filter(p => p.application_id === appId && isCommissionPayment(p) && p.status === "Received");
@@ -769,7 +760,7 @@ async function deleteLedgerPayment(paymentId) {
   if (!ok) return;
 
   try {
-    const { error } = await window.supabaseClient.from("application_payments").delete().eq("id", paymentId);
+    const { error } = await window.supabaseClient.from("application_payments").update({ status: 'Reversed', notes: 'Reversed by admin' }).eq("id", paymentId);
     if (error) throw error;
 
     toast("✓ Payment record deleted", "success");
@@ -788,7 +779,7 @@ function openReceiptModal(appId, customDetails = null) {
   const student = app.students || {};
   const sch = app.scholarships || {};
   const award = Number(app.scholarship_amount || app.expected_amount || 0);
-  const rate = Number(app.commission_percentage || 10);
+  const rate = Number((app.students && app.students.commission_percentage !== undefined) ? app.students.commission_percentage : (app.commission_percentage || 10));
   const due = Number(app.commission_amount || (award * rate / 100));
 
   const appPays = allPayments.filter(p => p.application_id === appId && p.status === "Received");
@@ -837,7 +828,7 @@ function exportCommissionsCsv() {
     const student = app.students || {};
     const sch = app.scholarships || {};
     const award = Number(app.scholarship_amount || app.expected_amount || 0);
-    const rate = Number(app.commission_percentage || 10);
+    const rate = Number((app.students && app.students.commission_percentage !== undefined) ? app.students.commission_percentage : (app.commission_percentage || 10));
     const due = Number(app.commission_amount || (award * rate / 100));
     const netShare = Math.max(0, award - due);
 

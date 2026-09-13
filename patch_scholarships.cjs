@@ -1,0 +1,229 @@
+const fs = require('fs');
+let html = fs.readFileSync('scholarships.html', 'utf8');
+
+const replacement = `
+  <div id="scholarship-modal" class="modal-root hidden fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-ink-950/60 backdrop-blur-xs"></div>
+    <div data-sheet class="relative bg-white w-full md:max-w-3xl md:rounded-3xl rounded-t-3xl max-h-[92vh] overflow-y-auto translate-y-full md:translate-y-0 md:opacity-0 md:scale-95 opacity-100 scale-100 shadow-2xl transition-all z-10 flex flex-col">
+      <div class="sticky top-0 bg-white/95 backdrop-blur-xs border-b border-ink-100 px-6 py-4.5 flex items-center justify-between z-10">
+        <div>
+          <h3 id="scholarship-modal-title" class="font-display text-base font-bold text-ink-900">Add Scholarship Scheme</h3>
+          <p class="text-xs text-ink-500 mt-0.5">Define criteria and eligibility rules.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="btn-ai-scholarship" onclick="openAIScholarshipModal()" class="px-3 py-1.5 bg-ink-900 text-gold-400 hover:bg-ink-800 text-xs font-bold rounded-lg shadow-xs transition flex items-center gap-1.5">
+            ✨ Add with AI
+          </button>
+          <button type="button" data-close-modal="scholarship-modal" class="w-8 h-8 rounded-full bg-ink-50 hover:bg-ink-100 text-ink-500 flex items-center justify-center text-sm transition">✕</button>
+        </div>
+      </div>
+      <form id="scholarship-form" class="p-6 space-y-6 flex-1 overflow-y-auto">
+        <input type="hidden" id="s-id">
+        
+        <!-- Basic Information -->
+        <section>
+          <h4 class="text-xs font-bold uppercase text-ink-500 mb-3 tracking-wider">Basic Information</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Scholarship Name *</label>
+              <input required id="s-name" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. Post-Matric Scholarship">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Provider/Organization *</label>
+              <input required id="s-provider" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. Govt of Bihar">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Description</label>
+              <textarea id="s-description" rows="2" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="Brief scheme summary…"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Official Website</label>
+              <input type="url" id="s-official-url" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="https://...">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Application Link</label>
+              <input type="url" id="s-application-url" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="https://...">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Start Date</label>
+              <input type="date" id="s-start" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Last Date (Deadline)</label>
+              <input type="date" id="s-end" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Scholarship Amount (₹)</label>
+              <input type="number" id="s-max-amount" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="50000">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Number of Awards</label>
+              <input type="number" id="s-awards-count" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="Leave blank if unlimited">
+            </div>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="s-renewal" class="w-4 h-4 rounded text-gold-500 border-ink-300">
+                <span class="text-xs font-semibold text-ink-800">Renewal Available</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="s-active" checked class="w-4 h-4 rounded text-gold-500 border-ink-300">
+                <span class="text-xs font-semibold text-ink-800">Status Active</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Course Level & Category (Multiple Selection) -->
+        <section>
+          <h4 class="text-xs font-bold uppercase text-ink-500 mb-3 tracking-wider mt-2 border-t border-ink-100 pt-5">Target Audience</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-2">Course Level (Select Multiple)</label>
+              <div class="grid grid-cols-2 gap-2 bg-ink-50/50 p-3 rounded-xl border border-ink-100" id="s-course-level-container">
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="Class 10" class="rounded border-ink-300 text-gold-500"> Class 10</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="Class 12" class="rounded border-ink-300 text-gold-500"> Class 12</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="Diploma" class="rounded border-ink-300 text-gold-500"> Diploma</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="ITI" class="rounded border-ink-300 text-gold-500"> ITI</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="UG" class="rounded border-ink-300 text-gold-500"> Undergraduate (UG)</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="PG" class="rounded border-ink-300 text-gold-500"> Postgraduate (PG)</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="PhD" class="rounded border-ink-300 text-gold-500"> PhD</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="Professional" class="rounded border-ink-300 text-gold-500"> Professional</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="course_level" value="Other" class="rounded border-ink-300 text-gold-500"> Other</label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-2">Category (Select Multiple)</label>
+              <div class="grid grid-cols-2 gap-2 bg-ink-50/50 p-3 rounded-xl border border-ink-100" id="s-category-container">
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="General" class="rounded border-ink-300 text-gold-500"> General</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="OBC" class="rounded border-ink-300 text-gold-500"> OBC</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="SC" class="rounded border-ink-300 text-gold-500"> SC</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="ST" class="rounded border-ink-300 text-gold-500"> ST</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="EWS" class="rounded border-ink-300 text-gold-500"> EWS</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="Minority" class="rounded border-ink-300 text-gold-500"> Minority</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="PwD" class="rounded border-ink-300 text-gold-500"> PwD</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="Female" class="rounded border-ink-300 text-gold-500"> Female</label>
+                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="category" value="Other" class="rounded border-ink-300 text-gold-500"> Other</label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Academic & Financial Eligibility -->
+        <section>
+          <h4 class="text-xs font-bold uppercase text-ink-500 mb-3 tracking-wider mt-2 border-t border-ink-100 pt-5">Academic Eligibility</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Minimum Percentage (%)</label>
+              <input type="number" step="0.1" id="s-min-pct" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. 50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Maximum Percentage (%)</label>
+              <input type="number" step="0.1" id="s-max-pct" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="Leave blank if none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Required Stream</label>
+              <input type="text" id="s-stream" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. Science, Arts">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Required Subjects</label>
+              <input type="text" id="s-subjects" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. PCM, Biology">
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h4 class="text-xs font-bold uppercase text-ink-500 mb-3 tracking-wider mt-2 border-t border-ink-100 pt-5">Family / Financial Eligibility</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Maximum Annual Family Income (₹)</label>
+              <input type="number" id="s-income-limit" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="e.g. 250000">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Minimum Annual Family Income (₹)</label>
+              <input type="number" id="s-min-income" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="Leave blank if none">
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h4 class="text-xs font-bold uppercase text-ink-500 mb-3 tracking-wider mt-2 border-t border-ink-100 pt-5">Other Eligibility</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Gender</label>
+              <select id="s-gender" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 bg-white">
+                <option value="Any">Any Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Transgender">Transgender</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">State / Domicile</label>
+              <select id="s-state" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 bg-white">
+                <option value="Any">All India (Any State)</option>
+                <option value="Bihar">Bihar</option>
+                <option value="UP">Uttar Pradesh</option>
+                <option value="MP">Madhya Pradesh</option>
+                <!-- Add options as needed -->
+                <option value="Other">Other State</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Age Limit</label>
+              <input type="number" id="s-age-limit" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="Maximum Age (Years)">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Institution Type</label>
+              <select id="s-institution" class="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-xs outline-none focus:border-gold-500 bg-white">
+                <option value="Any">Any Institution</option>
+                <option value="Government">Government Only</option>
+                <option value="Private">Private Only</option>
+                <option value="GovtAided">Govt-Aided Only</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-ink-700 mb-1.5">Additional Eligibility Conditions</label>
+              <textarea id="s-eligibility" rows="2" class="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs outline-none focus:border-gold-500" placeholder="Any special rules or required documents..."></textarea>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Action Buttons -->
+        <div class="flex gap-3 pt-4 border-t border-ink-100 sticky bottom-0 bg-white z-10 p-2 -mx-2">
+          <button type="button" data-close-modal="scholarship-modal" class="flex-1 border border-ink-200 text-ink-700 text-xs font-semibold rounded-xl py-2.5 hover:bg-ink-50 transition">Cancel</button>
+          <button type="submit" id="scholarship-save-btn" class="flex-[2] bg-ink-900 hover:bg-ink-800 text-white text-xs font-bold rounded-xl py-2.5 shadow-xs transition">Save Scholarship</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- AI Scholarship Modal -->
+  <div id="ai-scholarship-modal" class="modal-root hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div onclick="closeAIScholarshipModal()" class="absolute inset-0 bg-ink-950/60 backdrop-blur-xs"></div>
+    <div class="relative bg-white w-full max-w-xl rounded-3xl p-6 shadow-2xl z-10 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display text-lg font-bold text-ink-900">✨ Add Scholarship with AI</h3>
+        <button onclick="closeAIScholarshipModal()" class="w-8 h-8 rounded-full bg-ink-50 text-ink-500 flex items-center justify-center">✕</button>
+      </div>
+      <div class="flex-1 overflow-y-auto pr-2">
+        <p class="text-xs text-ink-600 mb-4 leading-relaxed">
+          Paste the official scholarship description, URL, or eligibility text below. The AI will extract the data and pre-fill the form for your review. <strong class="text-amber-600">You must review and verify all extracted data before saving.</strong>
+        </p>
+        <textarea id="ai-source-text" rows="6" class="w-full rounded-xl border border-ink-200 p-3 text-sm outline-none focus:border-gold-500" placeholder="Paste scholarship text, guidelines, or URL here..."></textarea>
+      </div>
+      <div class="mt-4 flex gap-3">
+        <button onclick="closeAIScholarshipModal()" class="flex-1 border border-ink-200 text-ink-700 text-sm font-semibold rounded-xl py-2 hover:bg-ink-50">Cancel</button>
+        <button id="ai-generate-btn" onclick="generateScholarshipFromAI()" class="flex-[2] bg-ink-900 text-gold-400 hover:bg-ink-800 font-bold text-sm rounded-xl py-2 flex items-center justify-center gap-2">
+          <span>✨</span> Generate Structured Data
+        </button>
+      </div>
+    </div>
+  </div>
+`;
+
+const startIndex = html.indexOf('<div id="scholarship-modal"');
+const endIndex = html.indexOf('<!-- Confirm delete modal -->');
+if (startIndex !== -1 && endIndex !== -1) {
+  html = html.slice(0, startIndex) + replacement + html.slice(endIndex);
+  fs.writeFileSync('scholarships.html', html, 'utf8');
+}

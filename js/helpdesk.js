@@ -2,6 +2,8 @@
 let allInquiries = [];
 let currentFilter = "all"; // 'all' | 'pending' | 'responded'
 let searchQuery = "";
+let selectedInquiryId = null;
+
 
 const TEMPLATES = {
   under_verification: "Dear Student, your application and submitted documents are currently under verification by the institutional nodal officer. You will receive an update once physical verification is concluded.",
@@ -56,7 +58,7 @@ async function loadHelpdeskData() {
     console.error("Load helpdesk data error:", err);
     toast("Failed to load inquiries: " + (err.message || ""), "error");
     container.innerHTML = `
-      <div class="p-8 text-center bg-white rounded-2xl border border-red-200 shadow-card text-xs text-red-600">
+      <div class="p-6 text-center bg-white rounded-2xl border border-red-200 shadow-card text-xs text-red-600">
         Failed to load inquiries. Please check your connection and refresh.
       </div>`;
   }
@@ -116,6 +118,7 @@ function handleHelpdeskSearch() {
   renderInquiries();
 }
 
+
 function renderInquiries() {
   const container = document.getElementById("inquiries-container");
   if (!container) return;
@@ -139,162 +142,120 @@ function renderInquiries() {
       const msg = (m.message || "").toLowerCase();
       const category = (m.category || "").toLowerCase();
       const sch = (m.related_scholarship || "").toLowerCase();
-      return name.includes(searchQuery) ||
-             mobile.includes(searchQuery) ||
-             code.includes(searchQuery) ||
-             subject.includes(searchQuery) ||
-             msg.includes(searchQuery) ||
-             category.includes(searchQuery) ||
+      return name.includes(searchQuery) || 
+             mobile.includes(searchQuery) || 
+             code.includes(searchQuery) || 
+             subject.includes(searchQuery) || 
+             msg.includes(searchQuery) || 
+             category.includes(searchQuery) || 
              sch.includes(searchQuery);
     });
   }
 
   if (list.length === 0) {
     container.innerHTML = `
-      <div class="p-12 text-center bg-white rounded-3xl border border-ink-100 shadow-card space-y-2">
-        <div class="w-12 h-12 rounded-2xl bg-ink-50 text-ink-400 flex items-center justify-center text-xl mx-auto">💬</div>
-        <h4 class="font-display font-bold text-sm text-ink-800">No Student Inquiries Found</h4>
-        <p class="text-xs text-ink-400 max-w-sm mx-auto">
-          ${searchQuery ? "No inquiries matched your search terms." : currentFilter === "pending" ? "Great job! There are no pending inquiries requiring replies right now." : "No support inquiries have been submitted yet."}
-        </p>
+      <div class="p-6 text-center space-y-2 opacity-60">
+        <div class="w-10 h-10 rounded-full bg-ink-100 text-ink-400 flex items-center justify-center text-lg mx-auto">💬</div>
+        <p class="text-[11px] text-ink-500">No inquiries found.</p>
       </div>`;
     return;
   }
 
   container.innerHTML = list.map(item => {
     const isPending = (item.status || "Pending").toLowerCase() === "pending";
-    const statusBadge = isPending
-      ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5 shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Awaiting Reply</span>`
-      : `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1 shrink-0"><span>✓</span> Responded</span>`;
-
-    const cleanPhone = (item.student_mobile || "").replace(/\D/g, "");
-    const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${item.student_name || "Student"}, this is regarding your inquiry on ScholarLedger.`)}` : null;
-
+    const statusDot = isPending ? `<span class="w-2 h-2 rounded-full bg-amber-500 shadow-sm shrink-0"></span>` : `<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shrink-0"></span>`;
+    const isSelected = item.id === selectedInquiryId;
+    
     return `
-      <div class="card-interactive ${isPending ? "border-amber-200/90 ring-1 ring-amber-100" : "border-ink-100"} p-4 sm:p-5 space-y-3.5">
-        <!-- Top Row: Student info & status -->
-        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-ink-100/80">
-          <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-xl ${isPending ? "bg-amber-100 text-amber-800" : "bg-ink-100 text-ink-800"} font-bold text-xs flex items-center justify-center shrink-0">
-              ${escapeHtml(item.student_name ? item.student_name.slice(0, 2).toUpperCase() : "ST")}
-            </div>
-            <div>
-              <div class="flex flex-wrap items-center gap-2">
-                <a href="student.html?id=${encodeURIComponent(item.student_id || "")}" class="font-display font-bold text-sm text-ink-900 hover:text-gold-600 transition">
-                  ${escapeHtml(item.student_name || "Student")}
-                </a>
-                <span class="font-mono text-[10px] px-2 py-0.5 rounded-md bg-ink-100 text-ink-600 font-semibold">
-                  ${escapeHtml(item.student_code || "STU")}
-                </span>
-                <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-ink-50 text-ink-600 border border-ink-100">
-                  ${escapeHtml(item.category || "General")}
-                </span>
-              </div>
-
-              <div class="flex flex-wrap items-center gap-3 text-[11px] text-ink-400 mt-1">
-                <span>📱 ${escapeHtml(item.student_mobile || "—")}</span>
-                ${item.student_course ? `<span>• ${escapeHtml(item.student_course)}</span>` : ""}
-                ${item.student_college ? `<span class="truncate max-w-[200px]">• ${escapeHtml(item.student_college)}</span>` : ""}
-                <span>• Asked ${formatDateTime(item.created_at)}</span>
-              </div>
-            </div>
+      <button onclick="selectInquiry('${item.id}')" class="w-full text-left p-3 hover:bg-white focus:bg-white transition flex flex-col gap-1 border-l-4 ${isSelected ? 'bg-white border-gold-500 shadow-sm' : 'border-transparent'}">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-1.5 font-bold text-xs text-ink-900 truncate">
+            ${statusDot}
+            <span class="truncate">${escapeHtml(item.student_name || "Student")}</span>
           </div>
-
-          <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
-            ${statusBadge}
-            ${waLink ? `
-              <a href="${waLink}" target="_blank" class="p-1.5 rounded-xl border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition" title="Message on WhatsApp">
-                <span class="text-xs">💬</span>
-              </a>` : ""}
-            ${cleanPhone ? `
-              <a href="tel:${cleanPhone}" class="p-1.5 rounded-xl border border-ink-200 text-ink-600 hover:bg-ink-50 transition" title="Direct Phone Call">
-                <span class="text-xs">📞</span>
-              </a>` : ""}
-          </div>
+          <span class="text-[9px] text-ink-400 whitespace-nowrap shrink-0">${formatDateTime(item.created_at).split(',')[0]}</span>
         </div>
-
-        <!-- Subject & Related Scholarship -->
-        <div class="space-y-1">
-          ${item.related_scholarship ? `
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50/80 border border-amber-200/60 rounded-xl text-[11px] text-amber-900 font-medium">
-              <span>🎓 Scheme:</span>
-              <span class="font-bold">${escapeHtml(item.related_scholarship)}</span>
-            </div>` : ""}
-          <h3 class="font-display font-bold text-sm text-ink-900 pt-0.5">
-            ${escapeHtml(item.subject || "Student Inquiry")}
-          </h3>
-          <p class="text-xs text-ink-700 bg-ink-50/60 p-3 rounded-xl border border-ink-100 whitespace-pre-line leading-relaxed">
-            ${escapeHtml(item.message || "—")}
-          </p>
-        </div>
-
-        <!-- Response Area -->
-        ${item.response ? `
-          <div class="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 space-y-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">🎓</span>
-                <span class="font-bold text-xs text-emerald-950">Coordinator Official Reply</span>
-                <span class="text-[10px] text-emerald-700">(${formatDateTime(item.responded_at || item.updated_at)})</span>
-              </div>
-              <button onclick="openReplyModal('${item.id}')" class="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline">
-                Edit Reply
-              </button>
-            </div>
-            <p class="text-xs text-emerald-900 whitespace-pre-line leading-relaxed pl-8">
-              ${escapeHtml(item.response)}
-            </p>
-          </div>
-        ` : `
-          <div class="flex items-center justify-between pt-1">
-            <span class="text-[11px] text-amber-700 font-medium flex items-center gap-1.5">
-              <span>⚠️</span>
-              <span>Student is waiting for coordinator guidance</span>
-            </span>
-            <button onclick="openReplyModal('${item.id}')" class="btn-compact btn-primary">
-              <span>Reply to Student</span>
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-            </button>
-          </div>
-        `}
-      </div>`;
+        <div class="text-[11px] font-semibold text-ink-700 truncate">${escapeHtml(item.subject || "Inquiry")}</div>
+        <p class="text-[10px] text-ink-500 line-clamp-1">${escapeHtml(item.message || "")}</p>
+      </button>
+    `;
   }).join("");
+  
+  if (selectedInquiryId && !list.find(i => i.id === selectedInquiryId)) {
+    selectedInquiryId = null;
+    renderActiveChat();
+  } else if (!selectedInquiryId && list.length > 0) {
+    selectInquiry(list[0].id);
+  }
 }
 
-// Modal handling
-function openReplyModal(messageId) {
-  const item = allInquiries.find(m => m.id === messageId);
+function selectInquiry(id) {
+  selectedInquiryId = id;
+  renderInquiries();
+  renderActiveChat();
+}
+
+function renderActiveChat() {
+  const emptyState = document.getElementById("chat-empty-state");
+  const activeState = document.getElementById("chat-active-state");
+  
+  if (!selectedInquiryId) {
+    emptyState.classList.remove("hidden");
+    activeState.classList.add("hidden");
+    return;
+  }
+  
+  const item = allInquiries.find(i => i.id === selectedInquiryId);
   if (!item) return;
-
-  document.getElementById("reply-message-id").value = item.id;
-  document.getElementById("reply-student-name").textContent = item.student_name || "Student";
-  document.getElementById("reply-student-info").textContent = `Mobile: ${item.student_mobile || "—"} · Code: ${item.student_code || "STU"}`;
-  document.getElementById("reply-category-badge").textContent = item.category || "General";
-  document.getElementById("reply-student-message").textContent = item.message || "—";
-
-  const schContainer = document.getElementById("reply-scheme-container");
-  const schName = document.getElementById("reply-scheme-name");
-  if (item.related_scholarship) {
-    schContainer.classList.remove("hidden");
-    schName.textContent = item.related_scholarship;
+  
+  emptyState.classList.add("hidden");
+  activeState.classList.remove("hidden");
+  
+  const isPending = (item.status || "Pending").toLowerCase() === "pending";
+  
+  document.getElementById("chat-student-name").textContent = item.student_name || "Student";
+  document.getElementById("chat-student-info").textContent = `Mobile: ${item.student_mobile || "—"} | Code: ${item.student_code || "STU"} | ${item.category || "General"}`;
+  document.getElementById("chat-avatar").textContent = (item.student_name || "S").charAt(0).toUpperCase();
+  
+  const badge = document.getElementById("chat-status-badge");
+  if (isPending) {
+    badge.className = "px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
+    badge.textContent = "Awaiting Reply";
   } else {
-    schContainer.classList.add("hidden");
+    badge.className = "px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
+    badge.textContent = "Responded";
   }
-
-  const contentInput = document.getElementById("reply-content");
-  contentInput.value = item.response || "";
+  
+  document.getElementById("reply-message-id").value = item.id;
+  document.getElementById("reply-content").value = item.response || "";
   document.getElementById("reply-status-select").value = item.status === "Resolved" ? "Resolved" : "Responded";
-
-  const modal = document.getElementById("reply-modal");
-  if (modal) {
-    modal.classList.remove("hidden");
-    setTimeout(() => contentInput.focus(), 50);
+  
+  // Render Chat History
+  const history = document.getElementById("chat-history");
+  let historyHtml = `
+    <div class="flex flex-col gap-1 max-w-[85%] self-start">
+      <div class="text-[9px] text-ink-400 font-bold uppercase ml-1">${escapeHtml(item.student_name)} (${formatDateTime(item.created_at)})</div>
+      <div class="bg-white border border-ink-100 rounded-2xl rounded-tl-sm p-3.5 shadow-sm space-y-2 relative">
+        ${item.related_scholarship ? `<div class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-lg inline-block border border-amber-100 mb-1">🎓 ${escapeHtml(item.related_scholarship)}</div>` : ""}
+        <div class="font-bold text-sm text-ink-900">${escapeHtml(item.subject || "Student Inquiry")}</div>
+        <div class="text-xs text-ink-700 whitespace-pre-line leading-relaxed">${escapeHtml(item.message || "")}</div>
+      </div>
+    </div>
+  `;
+  
+  if (item.response) {
+    historyHtml += `
+      <div class="flex flex-col gap-1 max-w-[85%] self-end items-end mt-4">
+        <div class="text-[9px] text-ink-400 font-bold uppercase mr-1">Coordinator (${formatDateTime(item.responded_at || item.updated_at)})</div>
+        <div class="bg-gold-50 border border-gold-200 rounded-2xl rounded-tr-sm p-3.5 shadow-sm">
+          <div class="text-xs text-ink-900 whitespace-pre-line leading-relaxed">${escapeHtml(item.response)}</div>
+        </div>
+      </div>
+    `;
   }
-}
-
-function closeReplyModal() {
-  const modal = document.getElementById("reply-modal");
-  if (modal) modal.classList.add("hidden");
+  
+  history.innerHTML = historyHtml;
+  history.scrollTop = history.scrollHeight;
 }
 
 function insertQuickTemplate(templateKey) {
@@ -347,7 +308,7 @@ async function handleSendReply(e) {
     }
 
     toast("✓ Official reply sent to student successfully!", "success");
-    closeReplyModal();
+    renderActiveChat();
     updateMetrics();
     renderInquiries();
   } catch (err) {
@@ -355,7 +316,7 @@ async function handleSendReply(e) {
     toast("Failed to send reply: " + (err.message || ""), "error");
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<span>Send Reply to Student</span> <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+    btn.innerHTML = `<span>Send</span> <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
   }
 }
 

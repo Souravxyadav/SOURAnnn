@@ -106,7 +106,7 @@ function onSelectStudent(studentId) {
     strip?.classList.add("hidden");
     badge?.classList.add("hidden");
     container.innerHTML = `
-      <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-ink-200">
+      <div class="text-center py-8 bg-white rounded-2xl border border-dashed border-ink-200">
         <div class="w-12 h-12 rounded-2xl bg-ink-50 text-ink-400 mx-auto flex items-center justify-center text-xl mb-3">🔍</div>
         <p class="font-semibold text-sm text-ink-800">Select a student above to evaluate eligibility</p>
         <p class="text-xs text-ink-400 mt-1">The engine will check all criteria and display qualified scholarships.</p>
@@ -222,8 +222,7 @@ function renderEvaluationCard(result, studentId) {
     <div class="card-interactive p-4 sm:p-5 flex flex-col justify-between space-y-3.5 ${isEligible ? "border-emerald-200" : "border-ink-100 opacity-80"}">
       <div>
         <div class="flex items-start justify-between gap-2 mb-2">
-          <span class="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-full text-[10px] font-bold ${isEligible ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}">
-            <span>${isEligible ? "✓ Eligible" : "✕ Ineligible"}</span>
+          ${window.EligibilityEngine ? window.EligibilityEngine.renderBadge(result.status) : '<span class="px-2 font-bold">' + result.statusLabel + '</span>'}
           </span>
           <span class="font-display font-bold text-xs sm:text-sm text-ink-900 font-mono">${formatCurrency(s.scholarship_amount || s.maximum_amount || 0)}</span>
         </div>
@@ -232,11 +231,12 @@ function renderEvaluationCard(result, studentId) {
         <p class="text-[11px] text-ink-500 mt-0.5 truncate">${escapeHtml(s.provider || "")}</p>
 
         <!-- Reasons or Matches -->
-        <div class="mt-2.5 space-y-1 text-xs">
-          ${isEligible
-            ? result.matches.map(m => `<p class="text-emerald-700 flex items-center gap-1.5"><span class="text-emerald-500 font-bold">✓</span> ${escapeHtml(m)}</p>`).join("")
-            : result.reasons.map(r => `<p class="text-red-600 flex items-start gap-1.5"><span class="text-red-500 font-bold">✕</span> <span>${escapeHtml(r)}</span></p>`).join("")
-          }
+        <div class="mt-2.5 space-y-1 text-[11px]">
+          ${result.checks.map(c => {
+            if (c.passed) return `<p class="text-emerald-700 flex items-start gap-1.5"><span class="text-emerald-500 font-bold">✓</span> <span>${escapeHtml(c.name)}</span></p>`;
+            if (c.review) return `<p class="text-amber-700 flex items-start gap-1.5"><span class="text-amber-500 font-bold">⚠</span> <span>${escapeHtml(c.name)}</span></p>`;
+            return `<p class="text-red-600 flex items-start gap-1.5"><span class="text-red-500 font-bold">✕</span> <span>${escapeHtml(c.name)}</span></p>`;
+          }).join("")}
         </div>
       </div>
 
@@ -265,7 +265,7 @@ function onSelectScholarship(schId) {
   if (!schId) {
     strip?.classList.add("hidden");
     container.innerHTML = `
-      <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-ink-200">
+      <div class="text-center py-8 bg-white rounded-2xl border border-dashed border-ink-200">
         <div class="w-12 h-12 rounded-2xl bg-ink-50 text-ink-400 mx-auto flex items-center justify-center text-xl mb-3">🎓</div>
         <p class="font-semibold text-sm text-ink-800">Select a scholarship above to discover eligible candidates</p>
         <p class="text-xs text-ink-400 mt-1">We'll scan all registered students who satisfy this scholarship's rules.</p>

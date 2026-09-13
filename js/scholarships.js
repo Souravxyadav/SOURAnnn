@@ -76,6 +76,30 @@ async function loadScholarships() {
   applyScholarshipFilters();
 }
 
+
+function renderFilterChips() {
+  const container = document.getElementById("active-filters-chips");
+  if (!container) return;
+  container.innerHTML = "";
+  
+  const addChip = (label, value, selectId) => {
+    if (value && value !== "ALL") {
+      const el = document.createElement("div");
+      el.className = "px-2 py-1 bg-gold-100 text-gold-900 border border-gold-300 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition";
+      el.innerHTML = `${label} &times;`;
+      el.onclick = () => {
+        document.getElementById(selectId).value = "ALL";
+        applyScholarshipFilters();
+      };
+      container.appendChild(el);
+    }
+  };
+  
+  if (document.getElementById("status-filter")) addChip(document.getElementById("status-filter").options[document.getElementById("status-filter").selectedIndex].text, document.getElementById("status-filter").value, "status-filter");
+  if (document.getElementById("state-filter")) addChip(document.getElementById("state-filter").options[document.getElementById("state-filter").selectedIndex].text, document.getElementById("state-filter").value, "state-filter");
+  if (document.getElementById("scheme-category-filter")) addChip(document.getElementById("scheme-category-filter").options[document.getElementById("scheme-category-filter").selectedIndex].text, document.getElementById("scheme-category-filter").value, "scheme-category-filter");
+}
+
 function applyScholarshipFilters() {
   const query = (qs("#search-input")?.value || "").trim().toLowerCase();
 
@@ -127,7 +151,7 @@ function renderScholarships(list) {
 
   if (list.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full text-center py-16 bg-white rounded-2xl border border-dashed border-ink-100">
+      <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-ink-100">
         <div class="w-12 h-12 rounded-2xl bg-gold-50 text-gold-600 flex items-center justify-center mx-auto text-xl mb-3">📜</div>
         <p class="text-sm font-semibold text-ink-700">No scholarships match your search.</p>
         <p class="text-xs text-ink-400 mt-1 mb-4">Add a scholarship scheme to start tracking student enrollments.</p>
@@ -205,41 +229,62 @@ function renderScholarships(list) {
 
 function openScholarshipForm(s = null) {
   qs("#scholarship-form").reset();
-  qs("#s-id").value = "";
-  qs("#s-active").checked = true;
-  qs("#s-show-to-students").checked = true;
-  qs("#s-manual-review").checked = false;
-  qs("#s-state").value = "All India";
-  qs("#s-course-level").value = "Any";
-  qs("#s-pwd").value = "Any";
-  qs("#s-category").value = "All";
-  qs("#s-gender").value = "All";
-  qs("#s-year").value = "2026-2027";
+  if (qs("#s-id")) qs("#s-id").value = "";
+  if (qs("#s-active")) qs("#s-active").checked = true;
+  if (qs("#s-show-to-students")) qs("#s-show-to-students").checked = true;
+  if (qs("#s-manual-review")) qs("#s-manual-review").checked = false;
+  if (qs("#s-renewal")) qs("#s-renewal").checked = false;
+  
+  if (qs("#s-state")) qs("#s-state").value = "Any";
+  if (qs("#s-gender")) qs("#s-gender").value = "Any";
+  if (qs("#s-institution")) qs("#s-institution").value = "Any";
+  
+  document.querySelectorAll('#s-course-level-container input').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#s-category-container input').forEach(cb => cb.checked = false);
+
   qs("#scholarship-modal-title").textContent = s ? "Edit Scholarship Scheme" : "Add Scholarship Scheme";
 
   if (s) {
-    qs("#s-id").value = s.id;
-    qs("#s-name").value = s.name || "";
-    qs("#s-provider").value = s.provider || "";
-    qs("#s-description").value = s.description || "";
-    qs("#s-year").value = s.academic_year || "2026-2027";
-    qs("#s-max-amount").value = s.scholarship_amount || s.maximum_amount || "";
-    qs("#s-commission-pct").value = s.commission_percentage || 10;
-    qs("#s-category").value = s.category || "All";
-    qs("#s-income-limit").value = s.income_limit || "";
-    qs("#s-min-pct").value = s.min_percentage || "";
-    qs("#s-gender").value = s.gender_eligibility || "All";
-    qs("#s-state").value = s.eligible_state || s.state || "All India";
-    qs("#s-course-level").value = s.eligible_course_level || s.course_level || "Any";
-    qs("#s-pwd").value = s.pwd_eligibility || "Any";
-    qs("#s-start").value = s.start_date || "";
-    qs("#s-end").value = s.end_date || "";
-    qs("#s-official-url").value = s.official_url || "";
-    qs("#s-application-url").value = s.application_url || "";
-    qs("#s-eligibility").value = s.eligibility || "";
-    qs("#s-active").checked = s.is_active !== false;
-    qs("#s-show-to-students").checked = s.show_to_students !== false;
-    qs("#s-manual-review").checked = Boolean(s.manual_review_required);
+    if (qs("#s-id")) qs("#s-id").value = s.id || "";
+    if (qs("#s-name")) qs("#s-name").value = s.name || "";
+    if (qs("#s-provider")) qs("#s-provider").value = s.provider || "";
+    if (qs("#s-description")) qs("#s-description").value = s.description || "";
+    
+    if (qs("#s-max-amount")) qs("#s-max-amount").value = s.scholarship_amount || s.maximum_amount || "";
+    if (qs("#s-awards-count")) qs("#s-awards-count").value = s.awards_count || "";
+    if (qs("#s-income-limit")) qs("#s-income-limit").value = s.income_limit || "";
+    if (qs("#s-min-income")) qs("#s-min-income").value = s.min_income || "";
+    if (qs("#s-min-pct")) qs("#s-min-pct").value = s.min_percentage || "";
+    if (qs("#s-max-pct")) qs("#s-max-pct").value = s.max_pct || "";
+    
+    if (qs("#s-gender")) qs("#s-gender").value = s.gender || s.gender_eligibility || "Any";
+    if (qs("#s-state")) qs("#s-state").value = s.state || s.eligible_state || "Any";
+    if (qs("#s-institution")) qs("#s-institution").value = s.institution_type || "Any";
+    
+    if (qs("#s-stream")) qs("#s-stream").value = s.req_stream || "";
+    if (qs("#s-subjects")) qs("#s-subjects").value = s.req_subjects || "";
+    if (qs("#s-age-limit")) qs("#s-age-limit").value = s.age_limit || "";
+    
+    if (qs("#s-start")) qs("#s-start").value = s.start_date || "";
+    if (qs("#s-end")) qs("#s-end").value = s.end_date || "";
+    if (qs("#s-official-url")) qs("#s-official-url").value = s.official_url || "";
+    if (qs("#s-application-url")) qs("#s-application-url").value = s.application_url || "";
+    if (qs("#s-eligibility")) qs("#s-eligibility").value = s.eligibility || "";
+    
+    if (qs("#s-active")) qs("#s-active").checked = s.active !== undefined ? s.active : s.is_active !== false;
+    if (qs("#s-show-to-students")) qs("#s-show-to-students").checked = s.show_to_students !== false;
+    if (qs("#s-manual-review")) qs("#s-manual-review").checked = Boolean(s.manual_review_required || s.manual_review);
+    if (qs("#s-renewal")) qs("#s-renewal").checked = Boolean(s.renewal);
+    
+    const cLevels = (s.course_level || "").split(',').map(x => x.trim());
+    document.querySelectorAll('#s-course-level-container input').forEach(cb => {
+      cb.checked = cLevels.includes(cb.value);
+    });
+    
+    const cats = (s.category || "").split(',').map(x => x.trim());
+    document.querySelectorAll('#s-category-container input').forEach(cb => {
+      cb.checked = cats.includes(cb.value);
+    });
   }
   openModal("scholarship-modal");
 }
@@ -252,31 +297,41 @@ async function onSaveScholarship(e) {
   const id = qs("#s-id").value;
   const maxAmt = qs("#s-max-amount").value ? Number(qs("#s-max-amount").value) : 0;
   const payload = {
-    name: qs("#s-name").value.trim(),
-    provider: qs("#s-provider").value.trim() || null,
-    description: qs("#s-description").value.trim() || null,
-    academic_year: qs("#s-year").value.trim() || null,
-    maximum_amount: maxAmt,
-    scholarship_amount: maxAmt,
-    commission_percentage: parseFloat(qs("#s-commission-pct").value) || 10,
-    category: qs("#s-category").value || "All",
-    eligible_categories: qs("#s-category").value || "All",
-    income_limit: parseFloat(qs("#s-income-limit").value) || 0,
-    min_percentage: parseFloat(qs("#s-min-pct").value) || 0,
-    gender_eligibility: qs("#s-gender").value || "All",
-    eligible_state: qs("#s-state").value || "All India",
-    state: qs("#s-state").value || "All India",
-    eligible_course_level: qs("#s-course-level").value || "Any",
-    pwd_eligibility: qs("#s-pwd").value || "Any",
-    start_date: qs("#s-start").value || null,
-    end_date: qs("#s-end").value || null,
-    official_url: qs("#s-official-url").value.trim() || null,
-    application_url: qs("#s-application-url").value.trim() || null,
-    eligibility: qs("#s-eligibility").value.trim() || null,
-    is_active: qs("#s-active").checked,
-    show_to_students: qs("#s-show-to-students").checked,
-    manual_review_required: qs("#s-manual-review").checked,
-  };
+      name: document.getElementById("s-name").value.trim(),
+      provider: document.getElementById("s-provider").value.trim(),
+      description: document.getElementById("s-description").value.trim(),
+      official_url: document.getElementById("s-official-url").value.trim(),
+      application_url: document.getElementById("s-application-url").value.trim(),
+      start_date: document.getElementById("s-start").value || null,
+      end_date: document.getElementById("s-end").value || null,
+      scholarship_amount: document.getElementById("s-max-amount").value ? parseFloat(document.getElementById("s-max-amount").value) : null,
+      maximum_amount: document.getElementById("s-max-amount").value ? parseFloat(document.getElementById("s-max-amount").value) : null,
+      awards_count: document.getElementById("s-awards-count").value ? parseInt(document.getElementById("s-awards-count").value, 10) : null,
+      renewal: document.getElementById("s-renewal").checked,
+      active: document.getElementById("s-active").checked,
+      
+      course_level: Array.from(document.querySelectorAll('#s-course-level-container input:checked')).map(cb => cb.value).join(', '),
+      category: Array.from(document.querySelectorAll('#s-category-container input:checked')).map(cb => cb.value).join(', '),
+      
+      min_percentage: document.getElementById("s-min-pct").value ? parseFloat(document.getElementById("s-min-pct").value) : null,
+      max_pct: document.getElementById("s-max-pct").value ? parseFloat(document.getElementById("s-max-pct").value) : null,
+      req_stream: document.getElementById("s-stream").value.trim(),
+      req_subjects: document.getElementById("s-subjects").value.trim(),
+      
+      income_limit: document.getElementById("s-income-limit").value ? parseFloat(document.getElementById("s-income-limit").value) : null,
+      min_income: document.getElementById("s-min-income").value ? parseFloat(document.getElementById("s-min-income").value) : null,
+      
+      gender: document.getElementById("s-gender").value,
+      state: document.getElementById("s-state").value,
+      age_limit: document.getElementById("s-age-limit").value ? parseInt(document.getElementById("s-age-limit").value, 10) : null,
+      institution_type: document.getElementById("s-institution").value,
+      
+      eligibility: document.getElementById("s-eligibility").value.trim(),
+      
+      academic_year: document.getElementById("s-year")?.value || "2024-2025",
+      show_to_students: document.getElementById("s-show-to-students")?.checked || true,
+      manual_review: document.getElementById("s-manual-review")?.checked || false
+    };
 
   const sb = window.supabaseClient;
   const { error } = id
@@ -306,3 +361,76 @@ async function deleteScholarship(id, name) {
   toast("Scholarship removed.");
   await loadScholarships();
 }
+
+window.openAIScholarshipModal = function() {
+  document.getElementById("ai-scholarship-modal").classList.remove("hidden");
+  document.getElementById("ai-source-text").value = "";
+};
+
+window.closeAIScholarshipModal = function() {
+  document.getElementById("ai-scholarship-modal").classList.add("hidden");
+};
+
+window.generateScholarshipFromAI = async function() {
+  const text = document.getElementById("ai-source-text").value.trim();
+  if (!text) {
+    toast("Please enter scholarship text or URL.", "error");
+    return;
+  }
+  const btn = document.getElementById("ai-generate-btn");
+  const origBtnText = btn.innerHTML;
+  btn.innerHTML = "<span>✨</span> Extracting...";
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch("/api/ai/scholarship", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    
+    if (data.error) throw new Error(data.error);
+    
+    // Fill the form fields with extracted data
+    document.getElementById("s-name").value = data.name || "";
+    document.getElementById("s-provider").value = data.provider || "";
+    document.getElementById("s-description").value = data.description || "";
+    document.getElementById("s-official-url").value = data.official_url || "";
+    document.getElementById("s-application-url").value = data.application_url || "";
+    
+    if (data.start_date) document.getElementById("s-start").value = data.start_date;
+    if (data.end_date) document.getElementById("s-end").value = data.end_date;
+    
+    document.getElementById("s-max-amount").value = data.scholarship_amount || "";
+    
+    // Checkboxes course level
+    if (data.course_levels && Array.isArray(data.course_levels)) {
+      document.querySelectorAll('#s-course-level-container input').forEach(cb => {
+        cb.checked = data.course_levels.includes(cb.value);
+      });
+    }
+    // Checkboxes category
+    if (data.categories && Array.isArray(data.categories)) {
+      document.querySelectorAll('#s-category-container input').forEach(cb => {
+        cb.checked = data.categories.includes(cb.value);
+      });
+    }
+    
+    document.getElementById("s-min-pct").value = data.min_percentage || "";
+    document.getElementById("s-income-limit").value = data.income_limit || "";
+    document.getElementById("s-state").value = data.state || "Any";
+    document.getElementById("s-gender").value = data.gender || "Any";
+    document.getElementById("s-age-limit").value = data.age_limit || "";
+    document.getElementById("s-eligibility").value = data.eligibility_conditions || "";
+    
+    closeAIScholarshipModal();
+    toast("Scholarship data extracted! Please review and Verify.", "success");
+  } catch(err) {
+    console.error("AI Generation Error:", err);
+    toast("AI extraction failed or unavailable. Please fill manually.", "error");
+  } finally {
+    btn.innerHTML = origBtnText;
+    btn.disabled = false;
+  }
+};

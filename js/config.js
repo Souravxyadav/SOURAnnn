@@ -1,8 +1,11 @@
-// ============================================================
-// EDIT THESE TWO VALUES ONLY.
-// Find them in Supabase → Project Settings → API
-// ============================================================
+// Supabase Configuration
+// Replace these values with your actual Supabase project URL and anon public key.
+// Never put your service_role key here.
+
 window.APP_CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT-REF.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+  SUPABASE_URL: "https://oqecfwapemsideodfmzl.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_mOmAsBtzyoCll0mQKpDiQQ_Tu7Z_pjN",
+  
+  // Advanced configuration
+  STORAGE_BUCKET_DOCUMENTS: "scholarship-documents"
 };

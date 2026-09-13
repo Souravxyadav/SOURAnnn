@@ -1,5 +1,9 @@
 // Students Controller
 let allStudents = [];
+let currentPage = 1;
+const pageSize = 100;
+let totalStudentsCount = 0;
+let isSearchMode = false;
 let filteredStudents = [];
 let selectedPendingIds = new Set();
 let currentStatusFilter = "ALL";
@@ -102,6 +106,31 @@ async function loadStudents() {
   allStudents = data || [];
   applyStudentFilters();
   renderPendingApprovalsSection();
+}
+
+
+function renderFilterChips() {
+  const container = document.getElementById("active-filters-chips");
+  if (!container) return;
+  container.innerHTML = "";
+  
+  const addChip = (label, value, selectId) => {
+    if (value && value !== "ALL") {
+      const el = document.createElement("div");
+      el.className = "px-2 py-1 bg-gold-100 text-gold-900 border border-gold-300 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition";
+      el.innerHTML = `${label} &times;`;
+      el.onclick = () => {
+        document.getElementById(selectId).value = "ALL";
+        applyStudentFilters();
+      };
+      container.appendChild(el);
+    }
+  };
+  
+  if (document.getElementById("status-filter")) addChip(document.getElementById("status-filter").options[document.getElementById("status-filter").selectedIndex].text, document.getElementById("status-filter").value, "status-filter");
+  if (document.getElementById("state-filter")) addChip(document.getElementById("state-filter").options[document.getElementById("state-filter").selectedIndex].text, document.getElementById("state-filter").value, "state-filter");
+  if (document.getElementById("category-filter")) addChip(document.getElementById("category-filter").options[document.getElementById("category-filter").selectedIndex].text, document.getElementById("category-filter").value, "category-filter");
+  if (document.getElementById("course-filter")) addChip(document.getElementById("course-filter").options[document.getElementById("course-filter").selectedIndex].text, document.getElementById("course-filter").value, "course-filter");
 }
 
 function applyStudentFilters() {
@@ -279,7 +308,7 @@ function renderStudents(list) {
 
   if (list.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full text-center py-16 bg-white rounded-2xl border border-dashed border-ink-100">
+      <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-ink-100">
         <div class="w-12 h-12 rounded-2xl bg-ink-50 text-ink-400 mx-auto flex items-center justify-center text-xl mb-3">👥</div>
         <p class="text-sm font-semibold text-ink-700">No students match the selected criteria.</p>
         <p class="text-xs text-ink-400 mt-1 mb-4">Add a new student or clear your filters.</p>
@@ -323,7 +352,7 @@ function renderStudents(list) {
                 </div>
               </div>
             </div>
-            ${statusBadge}
+            <div class="flex flex-col items-end gap-1">${statusBadge}<span class="text-[10px] font-bold text-ink-500 bg-ink-50 px-1.5 py-0.5 rounded border border-ink-100">Comm: ${s.commission_percentage !== undefined ? s.commission_percentage : 0}%</span></div>
           </div>
 
           <!-- Academic & College Info -->
@@ -487,6 +516,7 @@ function openStudentForm(student = null) {
     qs("#f-address").value = student.address || "";
     qs("#f-notes").value = student.notes || "";
     if (qs("#f-income")) qs("#f-income").value = student.annual_income || "";
+    if (qs("#f-commission")) qs("#f-commission").value = student.commission_percentage !== undefined ? student.commission_percentage : "";
     if (qs("#f-percentage")) qs("#f-percentage").value = student.percentage || "";
     if (qs("#f-status")) qs("#f-status").value = student.status || "Active";
   } else {
@@ -531,6 +561,7 @@ async function onSaveStudent(e) {
     address: qs("#f-address").value.trim() || null,
     notes: qs("#f-notes").value.trim() || null,
     annual_income: parseFloat(qs("#f-income")?.value) || null,
+    commission_percentage: parseFloat(qs("#f-commission")?.value) || 0,
     percentage: parseFloat(qs("#f-percentage")?.value) || null,
     status: qs("#f-status")?.value || "Active"
   };
@@ -562,4 +593,24 @@ async function deleteStudent(id, name) {
   }
   toast("Student deleted.");
   await loadStudents();
+}
+
+function exportStudentsCsv() {
+  if (!allStudents || allStudents.length === 0) {
+    toast("No students to export.", "info");
+    return;
+  }
+  let csv = "Student ID,Name,Mobile,Email,State,District,Category,Course,Admission Year,Status,Commission %\n";
+  filteredStudents.forEach(s => {
+    csv += `"${s.student_code || ''}","${s.name || ''}","${s.mobile || ''}","${s.email || ''}","${s.state || ''}","${s.city || ''}","${s.category || ''}","${s.course || ''}","${s.academic_year || ''}","${s.status || ''}","${s.commission_percentage !== undefined ? s.commission_percentage : ''}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.setAttribute('hidden', '');
+  a.setAttribute('href', url);
+  a.setAttribute('download', 'students_export.csv');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }

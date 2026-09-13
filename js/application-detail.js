@@ -50,7 +50,7 @@ async function loadCreateMode() {
   const sb = window.supabaseClient;
 
   const [{ data: students }, { data: scholarships }] = await Promise.all([
-    sb.from("students").select("id, name, student_code").order("name"),
+    sb.from("students").select("id, name, student_code, commission_percentage").order("name"),
     sb.from("scholarships").select("id, name").eq("is_active", true).order("name"),
   ]);
 
@@ -58,10 +58,25 @@ async function loadCreateMode() {
   (students || []).forEach(s => {
     const opt = document.createElement("option");
     opt.value = s.id;
+    opt.dataset.commission = s.commission_percentage || 10;
     opt.textContent = `${s.name}${s.student_code ? " (" + s.student_code + ")" : ""}`;
     studentSelect.appendChild(opt);
   });
   if (presetStudentId) studentSelect.value = presetStudentId;
+
+  studentSelect.addEventListener("change", () => {
+    const selectedOpt = studentSelect.options[studentSelect.selectedIndex];
+    const rateInput = qs("#a-comm-rate");
+    if (rateInput && selectedOpt) {
+      rateInput.value = selectedOpt.dataset.commission || 10;
+      calculateCommissionSplit();
+    }
+  });
+
+  // Trigger change to set initial commission
+  if (students && students.length > 0) {
+    studentSelect.dispatchEvent(new Event("change"));
+  }
 
   const scholarshipSelect = qs("#select-scholarship");
   (scholarships || []).forEach(s => {
@@ -95,7 +110,7 @@ async function loadExisting() {
   const sb = window.supabaseClient;
   const { data, error } = await sb
     .from("scholarship_applications")
-    .select("*, students(id, name, student_code), scholarships(id, name)")
+    .select("*, students(id, name, student_code, commission_percentage), scholarships(id, name)")
     .eq("id", appId)
     .single();
 
@@ -127,10 +142,10 @@ async function loadExisting() {
   qs("#a-expected").value = data.expected_amount || data.scholarship_amount || "";
   qs("#a-notes").value = data.notes || "";
 
-  // Set commission rate and amounts
+  // Set commission rate and amounts from student
   const rateInput = qs("#a-comm-rate");
   if (rateInput) {
-    rateInput.value = data.commission_percentage || 10;
+    rateInput.value = data.students?.commission_percentage ?? 10;
   }
   calculateCommissionSplit();
 
@@ -278,6 +293,8 @@ async function onSaveApplication(e) {
   }
 
   const expectedVal = qs("#a-expected").value ? Number(qs("#a-expected").value) : 0;
+  // Removed calculateCommissionSplit from a-comm-rate oninput since it's readonly now.
+  // It is calculated on a-expected oninput.
   const commRateVal = Number(qs("#a-comm-rate")?.value || 10);
   const commAmountVal = Math.round((expectedVal * commRateVal) / 100);
   const studentAmountVal = Math.max(0, expectedVal - commAmountVal);
@@ -405,7 +422,9 @@ async function onSavePayment(e) {
 async function deletePayment(id) {
   const ok = await confirmDelete("Delete Payment?", "This will remove the payment record.");
   if (!ok) return;
-  const { error } = await window.supabaseClient.from("application_payments").delete().eq("id", id);
+  const p = appPayments.find(x => x.id === id);
+  const table = p?.is_commission ? "commission_transactions" : "application_payments";
+  const { error } = await window.supabaseClient.from(table).update({ status: 'Reversed', notes: 'Reversed by admin' }).eq("id", id);
   if (error) {
     toast(friendlyError(error), "error");
     return;

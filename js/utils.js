@@ -71,7 +71,7 @@ function friendlyError(error) {
     return "Incorrect email or password.";
   }
   if (msg.toLowerCase().includes("failed to fetch")) {
-    return "Can't reach the server. Check your internet connection.";
+    return "Network Error (" + error.message + "). Check your internet connection or ad blocker.";
   }
   return msg || "Something went wrong. Please try again.";
 }
